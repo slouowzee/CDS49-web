@@ -29,4 +29,10 @@ class PublicWebController extends WebController
             'forfaits' => $forfaits
         ]);
     }
+
+    // ! LOT 1 : Ajout de la méthode "aPropos"
+    function aPropos(): string
+    {
+	return Template::render("views/global/a-propos.php");
+    }
 }

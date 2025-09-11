@@ -21,6 +21,9 @@ class Web
         Route::Add('/', [$public, 'home']);
         Route::Add('/forfaits.html', [$public, 'forfait']);
 
+	// ! LOT 1 : Ajout de la route "À propos"
+	Route::Add('/a-propos.html', [$public, 'aPropos']);
+
         // Gestion utilisateur
         Route::Add('/creer-compte.html', [$utilisateur, 'creerCompte']);
         Route::Add('/connexion.html', [$utilisateur, 'connexion']);
