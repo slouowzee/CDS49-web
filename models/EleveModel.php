@@ -11,6 +11,7 @@ use utils\SessionHelpers;
  * - ideleve (int, PK)
  * - nomeleve (varchar)
  * - prenomeleve (varchar)
+ * - teleleve (int)
  * - emaileleve (varchar)
  * - motpasseeleve (varchar)
  * - datenaissanceeleve (date)
@@ -52,7 +53,7 @@ class EleveModel extends SQL
      * @param string $nom
      * @param string $prenom
      */
-    public function creer_eleve(string $nom, string $prenom, string $email, string $motDePasse, string $dateNaissance): bool
+    public function creer_eleve(string $nom, string $prenom, string $telephone, string $email, string $motDePasse, string $dateNaissance): bool
     {
         // $pdo est l'instance PDO pour interagir avec la base de données.
         $pdo = $this->getPdo();
@@ -69,12 +70,13 @@ class EleveModel extends SQL
         }
 
         // Préparer la requête d'insertion
-        $query = "INSERT INTO eleve (nomeleve, prenomeleve, emaileleve, motpasseeleve, datenaissanceeleve) 
-                  VALUES (:nom, :prenom, :email, :motDePasse, :dateNaissance)";
+        $query = "INSERT INTO eleve (nomeleve, prenomeleve, teleleve, emaileleve, motpasseeleve, datenaissanceeleve) 
+                  VALUES (:nom, :prenom, :telephone, :email, :motDePasse, :dateNaissance)";
         $stmt = $pdo->prepare($query);
         $params = [
             ':nom' => $nom,
             ':prenom' => $prenom,
+            ':telephone' => $telephone,
             ':email' => $email,
             ':motDePasse' => $motDePasse, // Note: Mot de passe en clair, à sécuriser (avec password_hash($motDePasse, PASSWORD_DEFAULT) par exemple)
             ':dateNaissance' => $dateNaissance
@@ -156,11 +158,12 @@ class EleveModel extends SQL
      * @param int $ideleve
      * @param string $nom
      * @param string $prenom
+     * @param string $telephone
      * @param string $email
      * @param string $motDePasse (optionnel) Mot de passe à mettre à jour, si fourni.
      * @return bool
      */
-    public function update(string $ideleve, string $nom, string $prenom, string $email, string $datenaissanceeleve, ?string $motDePasse = null): bool
+    public function update(string $ideleve, string $nom, string $prenom, string $telephone, string $email, string $datenaissanceeleve, ?string $motDePasse = null): bool
     {
         $pdo = $this->getPdo();
 
@@ -176,7 +179,7 @@ class EleveModel extends SQL
         }
 
         // Préparer la requête de mise à jour
-        $query = "UPDATE eleve SET nomeleve = :nom, prenomeleve = :prenom, emaileleve = :email, datenaissanceeleve = :datenaissanceeleve";
+        $query = "UPDATE eleve SET nomeleve = :nom, prenomeleve = :prenom, teleleve= :telephone, emaileleve = :email, datenaissanceeleve = :datenaissanceeleve";
 
         if ($motDePasse !== null) {
             $query .= ", motpasseeleve = :motDePasse"; // Ajouter le mot de passe uniquement s'il est fourni
@@ -187,6 +190,7 @@ class EleveModel extends SQL
         $params = [
             ':nom' => $nom,
             ':prenom' => $prenom,
+	    ':telephone' => $telephone,
             ':email' => $email,
             ':datenaissanceeleve' => $datenaissanceeleve,
             ':ideleve' => $ideleve
@@ -207,6 +211,7 @@ class EleveModel extends SQL
                 'ideleve' => $ideleve,
                 'nomeleve' => $nom,
                 'prenomeleve' => $prenom,
+                'teleleve' => $telephone,
                 'emaileleve' => $email,
                 'datenaissanceeleve' => $datenaissanceeleve
             ]);

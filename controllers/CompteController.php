@@ -38,10 +38,11 @@ class CompteController extends WebController
             // Traitement de la mise à jour des informations de l'utilisateur
             $nom = $_POST['nom'] ?? null;
             $prenom = $_POST['prenom'] ?? null;
+            $telephone = $_POST['telephone'] ?? null;
             $email = $_POST['email'] ?? null;
             $dateNaissance = $_POST['datenaissance'] ?? null;
 
-            if (empty($nom) || empty($prenom) || empty($email) || empty($dateNaissance)) {
+            if (empty($nom) || empty($prenom) || empty($telephone) || empty($email) || empty($dateNaissance)) {
                 SessionHelpers::setFlashMessage('error', 'Tous les champs sont requis.');
                 $this->redirect('/mon-compte/profil.html');
             }
@@ -51,6 +52,7 @@ class CompteController extends WebController
                 SessionHelpers::getConnected()['ideleve'],
                 $nom,
                 $prenom,
+		$telephone,
                 $email,
                 $dateNaissance
             );

@@ -32,17 +32,22 @@
                         <div class="mb-3">
                             <label for="prenom" class="form-label">Prénom</label>
                             <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars(isset($prenomeleve) ? $prenomeleve : ''); ?>">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars(isset($emaileleve) ? $emaileleve : ''); ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="datenaissance" class="form-label">Date de naissance</label>
-                                <input type="date" class="form-control" id="datenaissance" name="datenaissance" value="<?= htmlspecialchars(isset($datenaissanceeleve) ? $datenaissanceeleve : ''); ?>">
-                            </div>
-                            <div class="text-center pt-3">
-                                <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
-                            </div>
+			</div>
+			<div class="mb-3">
+			    <label for="telephone" class="form-label">Numéro de téléphone</label>
+			    <input type="text" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars(isset($teleleve) ? $teleleve : ''); ?>">
+			</div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars(isset($emaileleve) ? $emaileleve : ''); ?>">
+			</div>
+			<div class="mb-3">
+			    <label for="datenaissance" class="form-label">Date de naissance</label>
+			    <input type="date" class="form-control" id="datenaissance" name="datenaissance" value="<?= htmlspecialchars(isset($datenaissanceeleve) ? $datenaissanceeleve : ''); ?>">
+			</div>
+			<div class="text-center pt-3">
+			    <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
+			</div>
                     </form>
                 </div>
             </div>

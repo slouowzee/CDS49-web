@@ -36,6 +36,7 @@ class UtilisateurController extends WebController
         if ($this->isPost()) {
             $nom = $_POST['nom'] ?? null;
             $prenom = $_POST['prenom'] ?? null;
+	    $telephone = $_POST['telephone'] ?? null;
             $email = $_POST['email'] ?? null;
             $password = $_POST['password'] ?? null;
             $confirmPassword = $_POST['confirm_password'] ?? null;
@@ -50,7 +51,7 @@ class UtilisateurController extends WebController
                 SessionHelpers::setFlashMessage('error', 'Les mots de passe ne correspondent pas.');
             } else {
                 // Création de l'élève dans la base de données (en utilisant le modèle EleveModel).
-                $success = $this->eleveModel->creer_eleve($nom, $prenom, $email, $password, $dateNaissance);
+                $success = $this->eleveModel->creer_eleve($nom, $prenom, $telephone, $email, $password, $dateNaissance);
 
                 if ($success) {
                     $this->redirect('/mon-compte/');
