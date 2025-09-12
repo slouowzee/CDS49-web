@@ -73,12 +73,16 @@ class EleveModel extends SQL
         $query = "INSERT INTO eleve (nomeleve, prenomeleve, teleleve, emaileleve, motpasseeleve, datenaissanceeleve) 
                   VALUES (:nom, :prenom, :telephone, :email, :motDePasse, :dateNaissance)";
         $stmt = $pdo->prepare($query);
+
+	$motDePasseHash = $motDePasse. $_ENV['PEPPER'];
+	$motDePasseHash= password_hash($motDePasseHash, PASSWORD_DEFAULT);
+
         $params = [
             ':nom' => $nom,
             ':prenom' => $prenom,
             ':telephone' => $telephone,
             ':email' => $email,
-            ':motDePasse' => $motDePasse, // Note: Mot de passe en clair, à sécuriser (avec password_hash($motDePasse, PASSWORD_DEFAULT) par exemple)
+            ':motDePasse' => $motDePasseHash,
             ':dateNaissance' => $dateNaissance
         ];
 
@@ -114,23 +118,14 @@ class EleveModel extends SQL
      */
     public function connexion(string $email, string $motDePasse, string $token = ""): array
     {
-        $query = "SELECT * FROM eleve WHERE emaileleve = :email AND motpasseeleve = :motDePasse LIMIT 1";
-        $params = [
-            ':email' => $email,
-            ':motDePasse' => $motDePasse
-        ];
+        $query = "SELECT * FROM eleve WHERE emaileleve = :email LIMIT 1";
+        $params = [':email' => $email];
 
         $result = $this->getPdo()->prepare($query);
         $result->execute($params);
         $eleve = $result->fetch();
 
-        // TODO: Le code est vulnérable, le mot de passe est stocké en clair dans la base de données.
-        // Il est recommandé de stocker les mots de passe de manière sécurisée (par exemple, en utilisant un hachage).
-        // Ici, il faudrait donc utiliser password_verify() pour vérifier le mot de passe haché.
-        // Exemple :
-        // password_verify($motDePasse, $eleve['motpasseeleve'])
-
-        if ($eleve) {
+        if ($eleve && password_verify($motDePasse . $_ENV['PEPPER'], $eleve['motpasseeleve'])) {
             // Si l'élève existe, sauvegarder les informations dans la session
             SessionHelpers::login($eleve);
         } else {
@@ -197,6 +192,8 @@ class EleveModel extends SQL
         ];
 
         if ($motDePasse !== null) {
+	    $motDePasse .= $_ENV['PEPPER'];
+	    $motDePasse= password_hash($motDePasse, PASSWORD_DEFAULT);
             $params[':motDePasse'] = $motDePasse; // Ajouter le mot de passe aux paramètres si fourni
         }
 
