@@ -291,4 +291,135 @@ class EleveModel extends SQL
             return false;
         }
     }
+
+    /**
+     * Récupère l'ID de l'élève en fonction de son adresse email.
+     * @param string $email
+     * @return array|false Retourne un tableau avec l'ID de l'élève si trouvé, false sinon
+     */
+    public function getByEmail(string $email)
+    {
+	$query = "SELECT ideleve FROM eleve WHERE emaileleve = :email LIMIT 1";
+
+	$stmt = $this->getPdo()->prepare($query);
+	$stmt->execute([':email' => $email]);
+
+	$result = $stmt->fetch();
+
+	if ($result) {
+	    return $result;
+	} else {
+	    return false;
+        }
+    }
+
+    /**
+     * Sauvegarde un token de réinitialisation dans la base de données et envoie un email à l'utilisateur.
+     * @param int $ideleve
+     * @param string $email
+     * @param string $token
+     * @return bool
+     */
+    public function saveResetToken(int $ideleve, string $email,string $token): bool
+    {
+	// Récupérer les informations de l'élève pour l'email
+	$query = "SELECT prenomeleve FROM eleve WHERE ideleve = :ideleve LIMIT 1";
+	$stmt = $this->getPdo()->prepare($query);
+	$stmt->execute([':ideleve' => $ideleve]);
+	$eleve = $stmt->fetch();
+
+	// Mettre à jour le token existant ou l'insérer s'il n'existe pas
+	$deleteQuery = "DELETE FROM demande_reinitialisation WHERE ideleve = :ideleve";
+	$deleteStmt = $this->getPdo()->prepare($deleteQuery);
+	$deleteStmt->execute([':ideleve' => $ideleve]);
+
+	$query = "INSERT INTO demande_reinitialisation (ideleve, token, date_creation) VALUES (:ideleve, :token, NOW())";
+	$stmt = $this->getPdo()->prepare($query);
+	$params = [
+	    ':ideleve' => $ideleve,
+	    ':token' => $token
+	];
+
+	if ($stmt->execute($params)) {
+	    EmailUtils::sendEmail(
+		$email,
+		"Reinitialisation de votre mot de passe",
+		"reinitialisation_mot_de_passe",
+		[
+		    'token' => $token,
+		    'prenomeleve' => $eleve['prenomeleve'] ?? 'Utilisateur',
+		]
+	    );
+	    return true;
+	} else {
+	    return false;
+	}
+    }
+
+    /**
+     * Valide un token de réinitialisation
+     * @param string $token
+     * @return array|false Retourne les données de l'élève si le token est valide, false sinon
+     */
+    public function validateResetToken(string $token)
+    {
+        $query = "SELECT e.*, dr.date_creation 
+                  FROM demande_reinitialisation dr
+                  JOIN eleve e ON dr.ideleve = e.ideleve
+                  WHERE dr.token = :token
+                  AND dr.date_creation >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+                  LIMIT 1";
+        
+        $stmt = $this->getPdo()->prepare($query);
+        $stmt->execute([':token' => $token]);
+        
+        return $stmt->fetch();
+    }
+
+    /**
+     * Met à jour le mot de passe d'un élève avec un token de réinitialisation valide
+     * @param string $token
+     * @param string $nouveauMotDePasse
+     * @return bool
+     */
+    public function resetPasswordWithToken(string $token, string $nouveauMotDePasse): bool
+    {
+        // Valider le token
+        $eleve = $this->validateResetToken($token);
+        
+        if (!$eleve) {
+            return false;
+        }
+        
+        // Mettre à jour le mot de passe
+        $motDePasseHash = $nouveauMotDePasse . $_ENV['PEPPER'];
+        $motDePasseHash = password_hash($motDePasseHash, PASSWORD_DEFAULT);
+        
+        $query = "UPDATE eleve SET motpasseeleve = :motDePasse WHERE ideleve = :ideleve";
+        $stmt = $this->getPdo()->prepare($query);
+        
+        $success = $stmt->execute([
+            ':motDePasse' => $motDePasseHash,
+            ':ideleve' => $eleve['ideleve']
+        ]);
+        
+        if ($success) {
+            // Supprimer le token après utilisation
+            $deleteQuery = "DELETE FROM demande_reinitialisation WHERE token = :token";
+            $deleteStmt = $this->getPdo()->prepare($deleteQuery);
+            $deleteStmt->execute([':token' => $token]);
+            
+            // Envoyer un email de confirmation
+            EmailUtils::sendEmail(
+                $eleve['emaileleve'],
+                "Confirmation de changement de mot de passe",
+                "confirmation_changement_mot_de_passe",
+                [
+                    'prenomeleve' => $eleve['prenomeleve']
+                ]
+            );
+        }
+        
+        return $success;
+    }
 }

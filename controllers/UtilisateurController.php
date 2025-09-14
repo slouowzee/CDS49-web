@@ -121,20 +121,101 @@ class UtilisateurController extends WebController
     public function motDePasseOublie(): string
     {
         if ($this->isPost()) {
-            // TODO: Implémenter la logique de réinitialisation du mot de passe.
-            // La réinitialisation va se dérouler en plusieurs étapes :
-            // 1. L'utilisateur entre son adresse email.
-            // 2. Un email de réinitialisation est envoyé avec un lien unique. (à implémenter, implique la création d'un token de réinitialisation à stocker en base de données. Un token est un identifiant UUID associé à l'utilisateur, avec une date d'expiration.)
-            // 3. L'utilisateur clique sur le lien et est redirigé vers un formulaire pour entrer un nouveau mot de passe. (à implémenter, création d'une page + récupération du token de réinitialisation)
-            // 4. Le mot de passe est mis à jour dans la base de données. (à implémenter)
-        }
+	    $email = $_POST['email'] ?? null;
+	    $token = $_POST['token'] ?? null;
+	    $nouveauMotDePasse = $_POST['nouveau_mot_de_passe'] ?? null;
+	    $confirmMotDePasse = $_POST['confirm_mot_de_passe'] ?? null;
+	    $resendEmail = $_POST['resend_email'] ?? null;
+
+	    // Gestion du renvoi d'email
+	    if (!empty($resendEmail)) {
+		$eleve = $this->eleveModel->getByEmail($resendEmail);
+		if ($eleve) {
+		    $newToken = bin2hex(random_bytes(3));
+		    $this->eleveModel->saveResetToken($eleve['ideleve'], $resendEmail, $newToken);
+		    SessionHelpers::setFlashMessage('success', 'Un nouveau jeton de réinitialisation a été envoyé à votre adresse email.');
+		    SessionHelpers::setFlashMessage('show_token_form', true);
+		    SessionHelpers::setFlashMessage('email_used', $resendEmail); // Conserver l'email pour les prochains renvois
+		} else {
+		    SessionHelpers::setFlashMessage('error', 'Aucun compte trouvé avec cette adresse email.');
+		    SessionHelpers::setFlashMessage('show_token_form', true);
+		}
+	    } elseif (!isset($_POST['token'])) {
+		// Étape 1 : Demande de réinitialisation par email
+		if (empty($email)) {
+		    SessionHelpers::setFlashMessage('error', 'L\'adresse email est requise.');
+		    $this->redirect('/mot-de-passe-oublie.html');
+		}
+
+		$eleve = $this->eleveModel->getByEmail($email);
+
+		if (!$eleve) {
+		    SessionHelpers::setFlashMessage('error', 'Aucun compte trouvé avec cette adresse email.');
+		    $this->redirect('/mot-de-passe-oublie.html');
+		} else {
+		    $token = bin2hex(random_bytes(3));
+		    $this->eleveModel->saveResetToken($eleve['ideleve'], $email, $token);
+
+		    SessionHelpers::setFlashMessage('token', $token);
+		    SessionHelpers::setFlashMessage('email_used', $email);
+		    SessionHelpers::setFlashMessage('success', 'Un jeton de réinitialisation a été envoyé à votre adresse email. Il expire dans 15 minutes.');
+		    $this->redirect('/mot-de-passe-oublie.html');
+		}
+	    } else {
+		// Étape 2 : Validation du token et nouveau mot de passe
+		if (empty($token)) {
+		    SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est requis.');
+		    SessionHelpers::setFlashMessage('show_token_form', true);
+		} else {
+		    // Si un nouveau mot de passe est fourni, procéder à la réinitialisation
+		    if (!empty($nouveauMotDePasse)) {
+			if (empty($confirmMotDePasse)) {
+			    SessionHelpers::setFlashMessage('error', 'La confirmation du mot de passe est requise.');
+			    SessionHelpers::setFlashMessage('token_valide', $token);
+			} elseif ($nouveauMotDePasse !== $confirmMotDePasse) {
+			    SessionHelpers::setFlashMessage('error', 'Les mots de passe ne correspondent pas.');
+			    SessionHelpers::setFlashMessage('token_valide', $token);
+			} elseif (strlen($nouveauMotDePasse) < 6) {
+			    SessionHelpers::setFlashMessage('error', 'Le mot de passe doit contenir au moins 6 caractères.');
+			    SessionHelpers::setFlashMessage('token_valide', $token);
+			} else {
+			    // Tenter de réinitialiser le mot de passe
+			    $success = $this->eleveModel->resetPasswordWithToken($token, $nouveauMotDePasse);
+
+			    if ($success) {
+				SessionHelpers::setFlashMessage('success', 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
+				$this->redirect('/connexion.html');
+			    } else {
+				SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
+				$this->redirect('/mot-de-passe-oublie.html');
+			    }
+			}
+		    } else {
+			// Vérifier si le token est valide avant d'afficher le formulaire de nouveau mot de passe
+			$eleve = $this->eleveModel->validateResetToken($token);
+			if (!$eleve) {
+			    SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
+			    // Rester sur l'étape de saisie du token pour permettre un nouvel essai
+			    SessionHelpers::setFlashMessage('show_token_form', true);
+			} else {
+			    SessionHelpers::setFlashMessage('token_valide', $token);
+			    SessionHelpers::setFlashMessage('success', 'Jeton validé. Veuillez entrer votre nouveau mot de passe.');
+			}
+		    }
+		}
+	    }
+	}
 
         return Template::render(
             "views/utilisateur/mot-de-passe-oublie.php",
             [
                 'titre' => 'Mot de passe oublié',
                 'error' => SessionHelpers::getFlashMessage('error'),
-                'success' => SessionHelpers::getFlashMessage('success')
+                'success' => SessionHelpers::getFlashMessage('success'),
+                'token' => SessionHelpers::getFlashMessage('token'),
+                'token_valide' => SessionHelpers::getFlashMessage('token_valide'),
+                'show_token_form' => SessionHelpers::getFlashMessage('show_token_form'),
+                'email_used' => SessionHelpers::getFlashMessage('email_used')
             ]
         );
     }
