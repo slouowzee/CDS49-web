@@ -120,6 +120,15 @@ class UtilisateurController extends WebController
      */
     public function motDePasseOublie(): string
     {
+        // Vérifier si un email est passé en paramètre GET pour afficher directement le formulaire de token
+        $emailFromUrl = $_GET['email'] ?? null;
+        if ($emailFromUrl && !$this->isPost()) {
+            // Afficher directement le formulaire de saisie du token
+            SessionHelpers::setFlashMessage('show_token_form', true);
+            SessionHelpers::setFlashMessage('email_used', $emailFromUrl);
+            SessionHelpers::setFlashMessage('success', 'Veuillez entrer le code de réinitialisation reçu par email.');
+        }
+
         if ($this->isPost()) {
 	    $email = $_POST['email'] ?? null;
 	    $token = $_POST['token'] ?? null;

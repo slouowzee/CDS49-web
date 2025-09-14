@@ -348,6 +348,7 @@ class EleveModel extends SQL
 		[
 		    'token' => $token,
 		    'prenomeleve' => $eleve['prenomeleve'] ?? 'Utilisateur',
+		    'emaileleve' => $email,
 		]
 	    );
 	    return true;
