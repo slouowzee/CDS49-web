@@ -17,4 +17,13 @@ class MoniteurModel extends SQL
     {
         parent::__construct('moniteur', 'idmoniteur');
     }
+
+	public function getAllMoniteurs(): array
+	{
+		$query = "SELECT * FROM moniteur";
+        $stmt = $this->getPdo()->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+	}
 }

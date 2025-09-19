@@ -34,12 +34,15 @@ use utils\SessionHelpers;
                     <li class="nav-item">
                         <a class="nav-link" href="/forfaits.html">Nos Forfaits</a>
                     </li>
+					<li class="nav-item">
+						<a class="nav-link" href="/notre-equipe.html">Notre Équipe</a>
+					</li>
                     <?php if (SessionHelpers::isLogin() == false) { ?>
-                        <li class="nav-item">
+						<li class="nav-item">
                             <a class="nav-link" href="/#presentation">Présentation</a>
                         </li>
-			<li class="nav-item">
-			    <a class="nav-link" href="/a-propos.html">À propos</a>
+						<li class="nav-item">
+			    			<a class="nav-link" href="/a-propos.html">À propos</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/#adresse">Nous trouver</a>
