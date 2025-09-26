@@ -41,7 +41,7 @@ $vehicules = $vehicules ?? [];
                         <?php foreach ($moniteurs as $moniteur): ?>
                             <div class="col">
                                 <div class="card h-100 shadow-sm">
-                                    <img src="assets/images/placeholder_moniteur.jpg" class="card-img-top" alt="Photo de <?= htmlspecialchars($moniteur['prenommoniteur'] . ' ' . $moniteur['nommoniteur']) ?>" style="height: 250px; object-fit: cover;">
+                                    <img src="/public/images/placeholder_moniteur.jpg" class="card-img-top" alt="Photo de <?= htmlspecialchars($moniteur['prenommoniteur'] . ' ' . $moniteur['nommoniteur']) ?>" style="height: 250px; object-fit: cover;">
                                     <div class="card-body d-flex flex-column text-center">
                                         <h5 class="card-title fw-bold text-primary">
                                             <?= htmlspecialchars($moniteur['prenommoniteur'] . ' ' . $moniteur['nommoniteur']) ?>
@@ -76,7 +76,7 @@ $vehicules = $vehicules ?? [];
                         <?php foreach ($vehicules as $vehicule): ?>
                             <div class="col">
                                 <div class="card h-100 shadow-sm">
-                                    <img src="assets/images/placeholder_vehicules.jpg" class="card-img-top" alt="<?= htmlspecialchars($vehicule['designation']) ?>" style="height: 250px; object-fit: cover;">
+                                    <img src="/public/images/placeholder_vehicules.jpg" class="card-img-top" alt="<?= htmlspecialchars($vehicule['designation']) ?>" style="height: 250px; object-fit: cover;">
                                     <div class="card-body d-flex flex-column">
                                         <h5 class="card-title fw-bold text-primary text-center">
                                             <?= htmlspecialchars($vehicule['designation']) ?>

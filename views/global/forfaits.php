@@ -4,6 +4,27 @@
         <p class="lead text-muted">Des solutions adaptées à chaque besoin pour obtenir votre permis.</p>
     </header>
 
+    <?php if (isset($flash_error)): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i><?= htmlspecialchars($flash_error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($flash_success)): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><?= htmlspecialchars($flash_success) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($error)): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i><?= htmlspecialchars($error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
     <section id="nos-forfaits" class="py-5">
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
 
@@ -39,12 +60,18 @@
 
                                     ?>
                                 </h3>
-                                <form method="POST" action="activer-offre.html" class="d-inline w-100">
-                                    <input type="hidden" name="idforfait" value="<?= $forfait->idforfait; ?>">
-                                    <button type="submit" class="btn <?= $forfait->prixhoraire ? 'btn-outline-primary' : 'btn-primary'; ?> mt-auto w-100">
-                                        Choisir ce forfait
+                                <?php if (isset($hasForfaitActif) && $hasForfaitActif): ?>
+                                    <button class="btn btn-secondary mt-auto w-100" disabled>
+                                        <i class="fas fa-ban me-2"></i>Forfait déjà actif
                                     </button>
-                                </form>
+                                <?php else: ?>
+                                    <form method="POST" action="activer-offre.html" class="d-inline w-100">
+                                        <input type="hidden" name="idforfait" value="<?= $forfait->idforfait; ?>">
+                                        <button type="submit" class="btn <?= $forfait->prixhoraire ? 'btn-outline-primary' : 'btn-primary'; ?> mt-auto w-100">
+                                            Choisir ce forfait
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -39,7 +39,10 @@ class SessionHelpers
 
     static function logout(): void
     {
+        // Nettoyer toutes les données de session liées à l'utilisateur
         unset($_SESSION['LOGIN']);
+        unset($_SESSION['forfait_selectionne']);
+        unset($_SESSION['FLASH']);
     }
 
     static function getConnected(): mixed
@@ -56,22 +59,7 @@ class SessionHelpers
         return isset($_SESSION['LOGIN']);
     }
 
-    static function saveSelectedForfait(int $idForfait): void
-    {
-        $_SESSION['SELECTED_FORFAIT'] = $idForfait;
-    }
 
-    static function getSelectedForfait(): ?int
-    {
-        $selectedForfait = $_SESSION['SELECTED_FORFAIT'] ?? null;
-        unset($_SESSION['SELECTED_FORFAIT']); // Suppression du forfait sélectionné après récupération
-        return $selectedForfait;
-    }
-
-    static function hasSelectedForfait(): bool
-    {
-        return isset($_SESSION['SELECTED_FORFAIT']);
-    }
 
     /**
      * Formate un numéro de téléphone français.

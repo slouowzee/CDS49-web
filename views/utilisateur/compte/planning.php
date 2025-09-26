@@ -14,6 +14,13 @@
             </div>
         <?php } ?>
 
+        <?php if (!empty($info)) { ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i><?= htmlspecialchars($info) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php } ?>
+
         <div class="row">
             <?php
             // Inclusion de la sidebar pour l'espace compte utilisateur (menu de navigation)

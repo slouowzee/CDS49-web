@@ -6,19 +6,23 @@ use utils\Template;
 use models\ForfaitModel;
 use models\MoniteurModel;
 use models\VehiculeModel;
+use models\InscrireModel;
 use controllers\base\WebController;
+use utils\SessionHelpers;
 
 class PublicWebController extends WebController
 {
     private ForfaitModel $forfaitModel;
     private MoniteurModel $moniteurModel;
     private VehiculeModel $vehiculeModel;
+    private InscrireModel $inscrireModel;
 
     public function __construct()
     {
         $this->forfaitModel = new ForfaitModel();
         $this->moniteurModel = new MoniteurModel();
         $this->vehiculeModel = new VehiculeModel();
+        $this->inscrireModel = new InscrireModel();
     }
 
     function home(): string
@@ -30,9 +34,27 @@ class PublicWebController extends WebController
     {
         // Récupération de tous les forfaits depuis la base de données
         $forfaits = $this->forfaitModel->getAllForfaits();
+        
+        $hasForfaitActif = false;
+        $errorMessage = null;
+        
+        // Vérifier si l'utilisateur connecté a déjà un forfait actif
+        if (SessionHelpers::isLogin()) {
+            $eleveConnecte = SessionHelpers::getConnected();
+            $idEleve = $eleveConnecte['ideleve'];
+            
+            if ($this->inscrireModel->eleveAForfaitActif($idEleve)) {
+                $hasForfaitActif = true;
+                $errorMessage = 'Vous avez déjà un forfait actif. Pour toute modification de votre forfait, veuillez vous rendre dans nos bureaux.';
+            }
+        }
 
         return Template::render("views/global/forfaits.php", [
-            'forfaits' => $forfaits
+            'forfaits' => $forfaits,
+            'hasForfaitActif' => $hasForfaitActif,
+            'error' => $errorMessage,
+            'flash_error' => SessionHelpers::getFlashMessage('error'),
+            'flash_success' => SessionHelpers::getFlashMessage('success')
         ]);
     }
 

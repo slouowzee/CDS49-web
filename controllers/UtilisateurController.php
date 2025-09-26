@@ -72,6 +72,10 @@ class UtilisateurController extends WebController
 
                 if ($success) {
                     if (isset($_SESSION['forfait_selectionne'])) {
+                        // Nettoyer les anciens messages info liés à l'authentification
+                        unset($_SESSION['FLASH']['info']);
+                        // Ajouter un message de succès pour l'activation du forfait
+                        SessionHelpers::setFlashMessage('success', 'Compte créé avec succès ! Vous pouvez maintenant confirmer votre abonnement au forfait.');
                         $this->redirect("/confirmer-abonnement.html");
                     } else {
                         $this->redirect('/mon-compte/');
@@ -121,7 +125,19 @@ class UtilisateurController extends WebController
 
             if ($eleve) {
                 if (isset($_SESSION['forfait_selectionne'])) {
-                    $this->redirect("/confirmer-abonnement.html");
+                    // Nettoyer les anciens messages info liés à l'authentification
+                    unset($_SESSION['FLASH']['info']);
+                    
+                    // Vérifier si l'utilisateur a déjà un forfait actif
+                    $idEleve = $eleve['ideleve'];
+                    if ($this->inscrireModel->eleveAForfaitActif($idEleve)) {
+                        // Supprimer le forfait de la session et rediriger vers le panneau avec un message
+                        unset($_SESSION['forfait_selectionne']);
+                        SessionHelpers::setFlashMessage('info', 'Vous avez déjà un forfait actif. Vous ne pouvez pas souscrire à un autre forfait.');
+                        $this->redirect('/mon-compte/');
+                    } else {
+                        $this->redirect("/confirmer-abonnement.html");
+                    }
                 } else {
                     $this->redirect('/mon-compte/');
                 }

@@ -173,7 +173,8 @@ class CompteController extends WebController
                 'planning' => $planning,
                 'eleve' => SessionHelpers::getConnected(),
                 'error' => SessionHelpers::getFlashMessage('error'),
-                'success' => SessionHelpers::getFlashMessage('success')
+                'success' => SessionHelpers::getFlashMessage('success'),
+                'info' => SessionHelpers::getFlashMessage('info')
             ]
         );
     }
