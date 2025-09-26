@@ -30,8 +30,10 @@
                         <input type="text" class="form-control" id="prenom" name="prenom" required>
                     </div>
 		    <div class="mb-3">
-			<label for="telephone" class="form-label">Numéro de téléphone</label>
-			<input type="text" class="form-control" id="telephone" name="telephone">
+			<label for="telephone" class="form-label">Numéro de téléphone <span class="text-muted">(optionnel)</span></label>
+			<input type="tel" class="form-control" id="telephone" name="telephone" 
+			       pattern="[0-9\s\+\-\.\(\)]+"
+			       title="Format français : 01 23 45 67 89">
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Adresse Email <span class="text-primary">*</span></label>
@@ -40,6 +42,9 @@
                     <div class="mb-3">
                         <label for="password" class="form-label">Mot de passe <span class="text-primary">*</span></label>
                         <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">
+                            <strong>Le mot de passe doit contenir :</strong> au moins 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="confirm-password" class="form-label">Confirmer le mot de passe <span class="text-primary">*</span></label>
@@ -60,3 +65,19 @@
         </div>
     </section>
 </main>
+
+<script>
+// Formatage automatique du numéro de téléphone
+document.getElementById('telephone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Supprimer tout sauf les chiffres
+    
+    if (value.length > 0) {
+        // Limiter à 10 chiffres
+        value = value.substring(0, 10);
+        
+        // Formater : XX XX XX XX XX
+        let formatted = value.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+        e.target.value = formatted;
+    }
+});
+</script>

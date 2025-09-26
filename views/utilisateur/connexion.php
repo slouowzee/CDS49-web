@@ -19,6 +19,13 @@
                     </div>
                 <?php } ?>
 
+                <?php if (!empty($_SESSION['forfait_selectionne'])): ?>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Vous avez sélectionné un forfait. Après connexion, vous pourrez confirmer votre abonnement.
+                    </div>
+                <?php endif; ?>
+
                 <form method="POST" action="connexion.html">
                     <div class="mb-3">
                         <label for="email" class="form-label">Adresse Email</label>

@@ -33,6 +33,7 @@ class Web
 
         // Gestion de l'offre
         Route::Add('/activer-offre.html', [$utilisateur, 'activerOffre']);
+        Route::Add('/confirmer-abonnement.html', [$utilisateur, 'confirmerAbonnement']);
 
         // Documentation API
         Route::Add('/documentation-api.html', function () {
@@ -44,6 +45,7 @@ class Web
             Route::Add('/deconnexion.html', [$compte, 'deconnexion']);
             Route::Add('/mon-compte/planning.html', [$compte, 'planning']);
             Route::Add('/mon-compte/profil.html', [$compte, 'mesInformations']);
+            Route::Add('/mon-compte/changer-mot-de-passe.html', [$compte, 'changerMotDePasse']);
             Route::Add('/mon-compte/', [$compte, 'monCompte']);
         }
 

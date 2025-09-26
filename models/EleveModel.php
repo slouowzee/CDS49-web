@@ -11,7 +11,7 @@ use utils\SessionHelpers;
  * - ideleve (int, PK)
  * - nomeleve (varchar)
  * - prenomeleve (varchar)
- * - teleleve (int)
+ * - teleleve (varchar, optionnel)
  * - emaileleve (varchar)
  * - motpasseeleve (varchar)
  * - datenaissanceeleve (date)
@@ -153,12 +153,12 @@ class EleveModel extends SQL
      * @param int $ideleve
      * @param string $nom
      * @param string $prenom
-     * @param string $telephone
+     * @param string|null $telephone
      * @param string $email
      * @param string $motDePasse (optionnel) Mot de passe à mettre à jour, si fourni.
      * @return bool
      */
-    public function update(string $ideleve, string $nom, string $prenom, string $telephone, string $email, string $datenaissanceeleve, ?string $motDePasse = null): bool
+    public function update(string $ideleve, string $nom, string $prenom, ?string $telephone, string $email, string $datenaissanceeleve, ?string $motDePasse = null): bool
     {
         $pdo = $this->getPdo();
 

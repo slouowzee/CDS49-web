@@ -13,11 +13,13 @@ class UtilisateurController extends WebController
 {
     private EleveModel $eleveModel;
     private ForfaitModel $forfaitModel;
+    private InscrireModel $inscrireModel;
 
     function __construct()
     {
         $this->eleveModel = new EleveModel();
         $this->forfaitModel = new ForfaitModel();
+        $this->inscrireModel = new InscrireModel();
     }
 
     /**
@@ -42,19 +44,38 @@ class UtilisateurController extends WebController
             $confirmPassword = $_POST['confirm_password'] ?? null;
             $dateNaissance = $_POST['date_naissance'] ?? null;
 
+            // Validation des champs obligatoires (téléphone peut être vide)
             if (empty($nom) || empty($prenom) || empty($email) || empty($password) || empty($confirmPassword) || empty($dateNaissance)) {
-                SessionHelpers::setFlashMessage('error', 'Tous les champs sont requis.');
+                SessionHelpers::setFlashMessage('error', 'Tous les champs sont requis sauf le numéro de téléphone.');
+                $this->redirect('/creer-compte.html');
+            }
+
+            if (!empty($telephone) && !SessionHelpers::isValidFrenchPhone($telephone)) {
+                SessionHelpers::setFlashMessage('error', 'Le numéro de téléphone doit contenir 10 chiffres ou être vide.');
+                $this->redirect('/creer-compte.html');
+            }
+
+            if (!SessionHelpers::validatePassword($password)) {
+                $errorMessage = SessionHelpers::getPasswordValidationError($password);
+                SessionHelpers::setFlashMessage('error', $errorMessage);
                 $this->redirect('/creer-compte.html');
             }
 
             if ($password !== $confirmPassword) {
                 SessionHelpers::setFlashMessage('error', 'Les mots de passe ne correspondent pas.');
             } else {
+                $cleanPhone = SessionHelpers::cleanPhoneForStorage($telephone);
+                $cleanPhone = $cleanPhone ?? '';
+                
                 // Création de l'élève dans la base de données (en utilisant le modèle EleveModel).
-                $success = $this->eleveModel->creer_eleve($nom, $prenom, $telephone, $email, $password, $dateNaissance);
+                $success = $this->eleveModel->creer_eleve($nom, $prenom, $cleanPhone, $email, $password, $dateNaissance);
 
                 if ($success) {
-                    $this->redirect('/mon-compte/');
+                    if (isset($_SESSION['forfait_selectionne'])) {
+                        $this->redirect("/confirmer-abonnement.html");
+                    } else {
+                        $this->redirect('/mon-compte/');
+                    }
                 } else {
                     SessionHelpers::setFlashMessage('error', "L'adresse email est déjà utilisée ou une erreur est survenue.");
                 }
@@ -99,7 +120,11 @@ class UtilisateurController extends WebController
             $eleve = $this->eleveModel->connexion($email, $password);
 
             if ($eleve) {
-                $this->redirect('/mon-compte/');
+                if (isset($_SESSION['forfait_selectionne'])) {
+                    $this->redirect("/confirmer-abonnement.html");
+                } else {
+                    $this->redirect('/mon-compte/');
+                }
             } else {
                 SessionHelpers::setFlashMessage('error', 'Identifiants incorrects.');
                 $this->redirect('/connexion.html');
@@ -184,8 +209,9 @@ class UtilisateurController extends WebController
 			} elseif ($nouveauMotDePasse !== $confirmMotDePasse) {
 			    SessionHelpers::setFlashMessage('error', 'Les mots de passe ne correspondent pas.');
 			    SessionHelpers::setFlashMessage('token_valide', $token);
-			} elseif (strlen($nouveauMotDePasse) < 6) {
-			    SessionHelpers::setFlashMessage('error', 'Le mot de passe doit contenir au moins 6 caractères.');
+			} elseif (!SessionHelpers::validatePassword($nouveauMotDePasse)) {
+			    $errorMessage = SessionHelpers::getPasswordValidationError($nouveauMotDePasse);
+			    SessionHelpers::setFlashMessage('error', $errorMessage);
 			    SessionHelpers::setFlashMessage('token_valide', $token);
 			} else {
 			    // Tenter de réinitialiser le mot de passe
@@ -235,20 +261,216 @@ class UtilisateurController extends WebController
      */
     public function activerOffre(): string
     {
-        $idForfait = $_GET['idforfait'] ?? null;
+        // Si on reçoit un POST avec l'ID du forfait, on le stocke en session
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['idforfait'])) {
+            $idForfait = $_POST['idforfait'];
+            
+            // Vérifier que l'ID forfait est valide
+            if (empty($idForfait) || !is_numeric($idForfait)) {
+                SessionHelpers::setFlashMessage('error', 'Forfait non valide.');
+                $this->redirect('/forfaits.html');
+            }
 
-        $forfait = $this->forfaitModel->getById($idForfait);
+            // Récupérer les informations du forfait pour vérifier qu'il existe
+            $forfait = $this->forfaitModel->getById((int)$idForfait);
+            if (!$forfait) {
+                SessionHelpers::setFlashMessage('error', 'Forfait introuvable.');
+                $this->redirect('/forfaits.html');
+            }
 
-        if (!$forfait) {
+            // Stocker le forfait en session
+            $_SESSION['forfait_selectionne'] = $idForfait;
+            
+            // Rediriger vers cette même page en GET pour afficher la confirmation
+            $this->redirect('/activer-offre.html');
+        }
+
+        // Si on reçoit un POST avec confirmation pour utilisateur non connecté
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_choice']) && !SessionHelpers::isLogin()) {
+            // Rediriger vers la page de connexion
+            SessionHelpers::setFlashMessage('info', 'Votre forfait sera activé après votre authentification.');
+            $this->redirect('/connexion.html');
+        }
+
+        // Récupérer l'ID du forfait depuis la session
+        $idForfait = $_SESSION['forfait_selectionne'] ?? null;
+
+        // Vérifier qu'un forfait est sélectionné
+        if (empty($idForfait)) {
+            SessionHelpers::setFlashMessage('error', 'Aucun forfait sélectionné.');
             $this->redirect('/forfaits.html');
         }
 
+        // Récupérer les informations du forfait
+        $forfait = $this->forfaitModel->getById((int)$idForfait);
+        if (!$forfait) {
+            SessionHelpers::setFlashMessage('error', 'Forfait introuvable.');
+            $this->redirect('/forfaits.html');
+        }
+
+        // Si l'utilisateur n'est pas connecté
+        if (!SessionHelpers::isLogin()) {
+            
+            // Afficher la première confirmation (pour utilisateur non connecté)
+            return Template::render(
+                "views/utilisateur/activer-offre.php",
+                [
+                    'titre' => 'Confirmer le choix du forfait',
+                    'forfait' => $forfait,
+                    'step' => 'confirm_choice_not_connected'
+                ]
+            );
+        }
+
+        // L'utilisateur est connecté
+        $eleveConnecte = SessionHelpers::getConnected();
+        $idEleve = $eleveConnecte['ideleve'];
+
+        // Vérifier si l'élève a déjà un forfait actif
+        if ($this->inscrireModel->eleveAForfaitActif($idEleve)) {
+            SessionHelpers::setFlashMessage('error', 'Vous avez déjà un forfait actif. Vous ne pouvez pas vous inscrire à un nouveau forfait.');
+            return Template::render(
+                "views/utilisateur/activer-offre.php",
+                [
+                    'titre' => 'Erreur d\'activation',
+                    'forfait' => $forfait,
+                    'step' => 'error',
+                    'error' => SessionHelpers::getFlashMessage('error')
+                ]
+            );
+        }
+
+        // Si c'est la confirmation finale (POST pour utilisateur connecté)
+        if ($this->isPost()) {
+            // Activer le forfait
+            $success = $this->inscrireModel->inscrireEleve($idEleve, (int)$idForfait);
+
+            if ($success) {
+                // Nettoyer la session
+                unset($_SESSION['forfait_selectionne']);
+                
+                // Message de succès
+                SessionHelpers::setFlashMessage('success', 'Félicitations ! Votre forfait "' . htmlspecialchars($forfait->libelleforfait) . '" a été activé avec succès.');
+                
+                return Template::render(
+                    "views/utilisateur/activer-offre.php",
+                    [
+                        'titre' => 'Forfait Activé',
+                        'forfait' => $forfait,
+                        'step' => 'success',
+                        'success' => SessionHelpers::getFlashMessage('success')
+                    ]
+                );
+            } else {
+                SessionHelpers::setFlashMessage('error', 'Une erreur est survenue lors de l\'activation de votre forfait.');
+                return Template::render(
+                    "views/utilisateur/activer-offre.php",
+                    [
+                        'titre' => 'Erreur d\'activation',
+                        'forfait' => $forfait,
+                        'step' => 'error',
+                        'error' => SessionHelpers::getFlashMessage('error')
+                    ]
+                );
+            }
+        }
+
+        // Afficher la confirmation finale (pour utilisateur connecté)
         return Template::render(
             "views/utilisateur/activer-offre.php",
             [
-                'titre' => 'Activer une offre',
-                'error' => SessionHelpers::getFlashMessage('error'),
-                'success' => SessionHelpers::getFlashMessage('success')
+                'titre' => 'Confirmer l\'activation du forfait',
+                'forfait' => $forfait,
+                'step' => 'confirm_activation_connected'
+            ]
+        );
+    }
+
+    /**
+     * Confirme l'abonnement après connexion/inscription
+     */
+    public function confirmerAbonnement(): string
+    {
+        // Vérifier que l'utilisateur est connecté
+        if (!SessionHelpers::isLogin()) {
+            $this->redirect('/connexion.html');
+        }
+
+        // Récupérer l'ID du forfait depuis la session
+        $idForfait = $_SESSION['forfait_selectionne'] ?? null;
+
+        // Vérifier qu'un forfait est sélectionné
+        if (empty($idForfait)) {
+            SessionHelpers::setFlashMessage('error', 'Aucun forfait sélectionné.');
+            $this->redirect('/forfaits.html');
+        }
+
+        // Récupérer les informations du forfait
+        $forfait = $this->forfaitModel->getById((int)$idForfait);
+        if (!$forfait) {
+            SessionHelpers::setFlashMessage('error', 'Forfait introuvable.');
+            $this->redirect('/forfaits.html');
+        }
+
+        $eleveConnecte = SessionHelpers::getConnected();
+        $idEleve = $eleveConnecte['ideleve'];
+
+        // Vérifier si l'élève a déjà un forfait actif
+        if ($this->inscrireModel->eleveAForfaitActif($idEleve)) {
+            SessionHelpers::setFlashMessage('error', 'Vous avez déjà un forfait actif. Vous ne pouvez pas vous inscrire à un nouveau forfait.');
+            return Template::render(
+                "views/utilisateur/confirmer-abonnement.php",
+                [
+                    'titre' => 'Erreur d\'activation',
+                    'forfait' => $forfait,
+                    'step' => 'error',
+                    'error' => SessionHelpers::getFlashMessage('error')
+                ]
+            );
+        }
+
+        // Si c'est une confirmation (POST)
+        if ($this->isPost()) {
+            // Activer le forfait
+            $success = $this->inscrireModel->inscrireEleve($idEleve, (int)$idForfait);
+
+            if ($success) {
+                // Nettoyer la session
+                unset($_SESSION['forfait_selectionne']);
+                
+                // Message de succès
+                SessionHelpers::setFlashMessage('success', 'Félicitations ! Votre forfait "' . htmlspecialchars($forfait->libelleforfait) . '" a été activé avec succès.');
+                
+                return Template::render(
+                    "views/utilisateur/confirmer-abonnement.php",
+                    [
+                        'titre' => 'Forfait Activé',
+                        'forfait' => $forfait,
+                        'step' => 'success',
+                        'success' => SessionHelpers::getFlashMessage('success')
+                    ]
+                );
+            } else {
+                SessionHelpers::setFlashMessage('error', 'Une erreur est survenue lors de l\'activation de votre forfait.');
+                return Template::render(
+                    "views/utilisateur/confirmer-abonnement.php",
+                    [
+                        'titre' => 'Erreur d\'activation',
+                        'forfait' => $forfait,
+                        'step' => 'error',
+                        'error' => SessionHelpers::getFlashMessage('error')
+                    ]
+                );
+            }
+        }
+
+        // Afficher la confirmation finale
+        return Template::render(
+            "views/utilisateur/confirmer-abonnement.php",
+            [
+                'titre' => 'Confirmer votre abonnement',
+                'forfait' => $forfait,
+                'step' => 'confirm'
             ]
         );
     }

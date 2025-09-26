@@ -75,8 +75,10 @@
 						
 						<div class="mb-3">
 							<label for="nouveau_mot_de_passe" class="form-label">Nouveau mot de passe</label>
-							<input type="password" class="form-control" id="nouveau_mot_de_passe" name="nouveau_mot_de_passe" required placeholder="Entrez votre nouveau mot de passe" minlength="6">
-							<div class="form-text">Le mot de passe doit contenir au moins 6 caractères.</div>
+							<input type="password" class="form-control" id="nouveau_mot_de_passe" name="nouveau_mot_de_passe" required placeholder="Entrez votre nouveau mot de passe">
+							<div class="form-text">
+								<strong>Le mot de passe doit contenir :</strong> au moins 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial.
+							</div>
 						</div>
 						
 						<div class="mb-3">

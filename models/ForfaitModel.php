@@ -45,4 +45,16 @@ class ForfaitModel extends SQL
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_OBJ);
     }
+
+    /**
+     * Récupère tous les forfaits disponibles.
+     *
+     * @return array|null
+     */
+    public function getAllForfaits(): array|null
+    {
+        $stmt = SQL::getPdo()->prepare("SELECT * FROM {$this->tableName} ORDER BY prixforfait ASC;");
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
 }

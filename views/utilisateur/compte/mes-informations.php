@@ -34,8 +34,12 @@
                             <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars(isset($prenomeleve) ? $prenomeleve : ''); ?>">
 			</div>
 			<div class="mb-3">
-			    <label for="telephone" class="form-label">Numéro de téléphone</label>
-			    <input type="text" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars(isset($teleleve) ? $teleleve : ''); ?>">
+			    <label for="telephone" class="form-label">Numéro de téléphone <span class="text-muted">(optionnel)</span></label>
+			    <input type="tel" class="form-control" id="telephone" name="telephone" 
+			           value="<?= htmlspecialchars(isset($teleleve) && !empty($teleleve) ? \utils\SessionHelpers::formatFrenchPhone($teleleve) : ''); ?>"
+			           placeholder="01 23 45 67 89"
+			           pattern="[0-9\s\+\-\.\(\)]+"
+			           title="Format français : 01 23 45 67 89">
 			</div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
@@ -54,3 +58,19 @@
         </div>
     </section>
 </main>
+
+<script>
+// Formatage automatique du numéro de téléphone
+document.getElementById('telephone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Supprimer tout sauf les chiffres
+    
+    if (value.length > 0) {
+        // Limiter à 10 chiffres
+        value = value.substring(0, 10);
+        
+        // Formater : XX XX XX XX XX
+        let formatted = value.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+        e.target.value = formatted;
+    }
+});
+</script>

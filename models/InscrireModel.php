@@ -33,4 +33,32 @@ class InscrireModel extends SQL
         $stmt->execute([':ideleve' => $idEleve]);
         return $stmt->fetch(\PDO::FETCH_OBJ);
     }
+
+    /**
+     * Vérifie si un élève a déjà un forfait actif.
+     */
+    public function eleveAForfaitActif(int $idEleve): bool
+    {
+        $stmt = $this->getPdo()->prepare("SELECT COUNT(*) as count FROM inscrire WHERE ideleve = :ideleve;");
+        $stmt->execute([':ideleve' => $idEleve]);
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        return $result->count > 0;
+    }
+
+    /**
+     * Inscrit un élève à un forfait.
+     */
+    public function inscrireEleve(int $idEleve, int $idForfait): bool
+    {
+        try {
+            $stmt = $this->getPdo()->prepare("INSERT INTO inscrire (ideleve, idforfait, dateinscription) VALUES (:ideleve, :idforfait, :dateinscription);");
+            return $stmt->execute([
+                ':ideleve' => $idEleve,
+                ':idforfait' => $idForfait,
+                ':dateinscription' => date('Y-m-d')
+            ]);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 }
