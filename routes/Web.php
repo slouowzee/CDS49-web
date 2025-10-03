@@ -36,6 +36,9 @@ class Web
         Route::Add('/confirmer-abonnement.html', [$utilisateur, 'confirmerAbonnement']);
 
         // Documentation API
+		Route::Add('/connexion-api.html', [$utilisateur, 'connexionApi']);
+		Route::Add('/demande-acces-api.html', [$utilisateur, 'demandeAccesApi']);
+		Route::Add('/creer-compte-api.html', [$utilisateur, 'creerCompteApi']);
         Route::Add('/documentation-api.html', function () {
             return Template::render('views/global/documentation-api.php');
         });
