@@ -37,13 +37,24 @@ class SessionHelpers
         $_SESSION['LOGIN'] = $equipe;
     }
 
+	 static function loginApi(mixed $compteApi): void
+	{
+		$_SESSION['LOGIN_API'] = $compteApi;
+	}
+
     static function logout(): void
     {
-        // Nettoyer toutes les données de session liées à l'utilisateur
         unset($_SESSION['LOGIN']);
+		unset($_SESSION['LOGIN_API']);
         unset($_SESSION['forfait_selectionne']);
         unset($_SESSION['FLASH']);
     }
+
+	 static function logoutApi(): void
+	{
+		unset($_SESSION['LOGIN_API']);
+		unset($_SESSION['FLASH']);
+	}
 
     static function getConnected(): mixed
     {
@@ -54,12 +65,24 @@ class SessionHelpers
         }
     }
 
+	static function getConnectedApi(): mixed
+	{
+		if (SessionHelpers::isLoginApi()) {
+			return $_SESSION['LOGIN_API'];
+		} else {
+			return array();
+		}
+	}
+
     static function isLogin(): bool
     {
         return isset($_SESSION['LOGIN']);
     }
 
-
+	static function isLoginApi(): bool
+	{
+		return isset($_SESSION['LOGIN_API']);
+	}
 
     /**
      * Formate un numéro de téléphone français.

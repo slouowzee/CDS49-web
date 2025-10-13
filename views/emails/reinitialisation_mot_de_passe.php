@@ -119,7 +119,7 @@
             <p>Pour terminer la réinitialisation de votre mot de passe, cliquez sur le lien ci-dessous et utilisez votre code :</p>
             
             <div style="text-align: center; margin: 30px 0;">
-                <a href="<?= $_ENV['BASE_URL'] ?? 'http://localhost:9000' ?>/mot-de-passe-oublie.html?email=<?= urlencode($emaileleve ?? '') ?>" class="button">
+                <a href="<?= $_ENV['BASE_URL'] ?? 'http://192.168.119.3' ?>/mot-de-passe-oublie.html?email=<?= urlencode($emaileleve ?? '') ?>" class="button">
                     Réinitialiser mon mot de passe
                 </a>
             </div>

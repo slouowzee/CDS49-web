@@ -9,6 +9,9 @@ include("vendor/autoload.php"); // Pour les librairies externes. (PHPMailer, etc
 // Set le fuseau horaire par défaut
 date_default_timezone_set('Europe/Paris');
 
+$dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__);
+$dotenv->safeLoad();
+
 /*
  * Permet l'utilisation du serveur PHP interne et l'affichage des contenus static.
  */

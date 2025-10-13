@@ -5,16 +5,15 @@
                 <div class="text-center mb-4">
                     <img src="/public/images/logo_cds49.jpeg" alt="Logo CDS 49" style="max-width: 150px; border-radius: 10px;">
                 </div>
-                <h2 class="display-5 fw-light text-center mb-4">Connexion API</h2>
-                <p class="text-center text-muted mb-4">Accédez à la documentation de l'API</p>
+                <h2 class="display-5 fw-light text-center mb-4">Accès aux documents de l'API</h2>
 
                 <?php if (!empty($error)) { ?>
                     <div class="alert alert-danger" role="alert">
                         <?= htmlspecialchars($error) ?>
                     </div>
                 <?php } ?>
-
-                <?php if (!empty($success)) { ?>
+				
+				<?php if (!empty($success)) { ?>
                     <div class="alert alert-success" role="alert">
                         <?= htmlspecialchars($success) ?>
                     </div>
@@ -34,10 +33,10 @@
                     </div>
                 </form>
                 <p class="text-center mt-4">
-                    Vous souhaitez accéder à la documentation de notre API ? <a href="demande-acces-api.html">Demander en l'accès.</a>.
+                    Vous n'avez pas encore demandé l'accès ? <a href="demande-acces-api.html">Demandez-le ici</a>.
                 </p>
                 <p class="text-center mt-2">
-                    <a href="mot-de-passe-oublie.html">Mot de passe oublié ?</a>
+                    <a href="mot-de-passe-oublie-api.html">Mot de passe oublié ?</a>
                 </p>
             </div>
         </div>

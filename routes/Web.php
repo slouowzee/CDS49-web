@@ -8,6 +8,7 @@ use routes\base\Route;
 use utils\SessionHelpers;
 use controllers\PublicWebController;
 use controllers\UtilisateurController;
+use controllers\CompteApiController;
 
 class Web
 {
@@ -16,6 +17,7 @@ class Web
         $public = new PublicWebController();
         $utilisateur = new UtilisateurController();
         $compte = new CompteController();
+		$compteApi = new CompteApiController();
 
         // Appel la méthode « home » dans le contrôleur $main.
         Route::Add('/', [$public, 'home']);
@@ -36,9 +38,10 @@ class Web
         Route::Add('/confirmer-abonnement.html', [$utilisateur, 'confirmerAbonnement']);
 
         // Documentation API
-		Route::Add('/connexion-api.html', [$utilisateur, 'connexionApi']);
-		Route::Add('/demande-acces-api.html', [$utilisateur, 'demandeAccesApi']);
-		Route::Add('/creer-compte-api.html', [$utilisateur, 'creerCompteApi']);
+		Route::Add('/connexion-api.html', [$compteApi, 'connexion']);
+		Route::Add('/demande-acces-api.html', [$compteApi, 'demandeAcces']);
+		Route::Add('/creer-compte-api.html', [$compteApi, 'creerCompteApi']);
+        Route::Add('/deconnexion-api.html', [$compteApi, 'deconnexion']);
         Route::Add('/documentation-api.html', function () {
             return Template::render('views/global/documentation-api.php');
         });

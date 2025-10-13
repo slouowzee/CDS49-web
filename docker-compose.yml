@@ -6,9 +6,9 @@ services:
     container_name: front
     environment:
       - MVC_SERVER=phpmyadmin.dombtsig.local
-      - MVC_DB=ap3_2025_2026
-      - MVC_USER=ap3_2025_2026
-      - MVC_TOKEN=NO0k6GX5
+      - MVC_DB=ap3_les-supers-nanas
+      - MVC_USER=ap3_les-supers-nanas-1
+      - MVC_TOKEN=3VTeHYeL
       - MVC_DEBUG=true
       - URL_BASE=http://localhost:9000/
       - MVC_MAIL_SERVER=mail.dombtsig.local
@@ -18,5 +18,5 @@ services:
       - .:/var/www/html/
     restart: unless-stopped
     # Le port 9000 n'est pas exposé car il est derrrière un reverse proxy (nginx). Accessible via front:9000, car dans le même réseau Docker.
-    # ports:
-    # - "9000:9000"
+    ports:
+      - "9000:9000"

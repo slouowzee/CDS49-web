@@ -5,10 +5,10 @@ x-env-variables: &env-variables
     - MYSQL_DATABASE=cds49
     - MYSQL_USER=cds49
     - MYSQL_PASSWORD=cds49
-    - MVC_SERVER=bdd
-    - MVC_DB=cds49
-    - MVC_USER=cds49
-    - MVC_TOKEN=cds49
+    - MVC_SERVER=phpmyadmin.dombtsig.local
+    - MVC_DB=ap3_les-supers-nanas
+    - MVC_USER=ap3_les-supers-nanas
+    - MVC_TOKEN=3VTeHYeL
     - MVC_DEBUG=false
     - MVC_URL_BASE=http://localhost:9000/
     - MVC_MAIL_SERVER=mail.dombtsig.local

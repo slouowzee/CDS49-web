@@ -38,7 +38,7 @@ class UtilisateurController extends WebController
         if ($this->isPost()) {
             $nom = $_POST['nom'] ?? null;
             $prenom = $_POST['prenom'] ?? null;
-	    $telephone = $_POST['telephone'] ?? null;
+	    	$telephone = $_POST['telephone'] ?? null;
             $email = $_POST['email'] ?? null;
             $password = $_POST['password'] ?? null;
             $confirmPassword = $_POST['confirm_password'] ?? null;
@@ -149,8 +149,7 @@ class UtilisateurController extends WebController
 
         return Template::render("views/utilisateur/connexion.php", [
             'titre' => 'Connexion',
-            'error' => SessionHelpers::getFlashMessage('error'),
-            'success' => SessionHelpers::getFlashMessage('success')
+            'error' => SessionHelpers::getFlashMessage('error')
         ]);
     }
 

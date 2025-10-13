@@ -37,7 +37,7 @@ class ConduireModel extends SQL
 
         $stmt = $this->getPdo()->prepare("SELECT * FROM conduire WHERE ideleve = :ideleve ORDER BY heuredebut DESC");
         $stmt->execute([':ideleve' => $idEleve]);
-        $lessons = $stmt->fetchAll(\PDO::FETCH_OBJ);
+        $lessons = $stmt->fetchAll(PDO::FETCH_OBJ);
         $planning = [];
 
         // On Compte le nombre de leçons plannifiées
@@ -53,7 +53,7 @@ class ConduireModel extends SQL
         $prochainRdv = null;
         $stmt = $this->getPdo()->prepare("SELECT heuredebut FROM conduire WHERE ideleve = :ideleve AND heuredebut > NOW() ORDER BY heuredebut ASC LIMIT 1");
         $stmt->execute([':ideleve' => $idEleve]);
-        $nextLesson = $stmt->fetch(\PDO::FETCH_OBJ);
+        $nextLesson = $stmt->fetch(PDO::FETCH_OBJ);
         if ($nextLesson) {
             $prochainRdv = $nextLesson->heuredebut;
         }

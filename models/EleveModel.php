@@ -74,8 +74,8 @@ class EleveModel extends SQL
                   VALUES (:nom, :prenom, :telephone, :email, :motDePasse, :dateNaissance)";
         $stmt = $pdo->prepare($query);
 
-	$motDePasseHash = $motDePasse. $_ENV['PEPPER'];
-	$motDePasseHash= password_hash($motDePasseHash, PASSWORD_DEFAULT);
+		$motDePasseHash = $motDePasse. $_ENV['PEPPER'];
+		$motDePasseHash= password_hash($motDePasseHash, PASSWORD_DEFAULT);
 
         $params = [
             ':nom' => $nom,
