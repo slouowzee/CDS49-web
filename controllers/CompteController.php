@@ -8,18 +8,21 @@ use models\InscrireModel;
 use utils\SessionHelpers;
 use controllers\base\WebController;
 use models\ConduireModel;
+use models\ResultatModel;
 
 class CompteController extends WebController
 {
     private EleveModel $eleveModel;
     private InscrireModel $inscrireModel;
     private ConduireModel $conduireModel;
+	private ResultatModel $resultatModel;
 
     public function __construct()
     {
         $this->eleveModel = new EleveModel();
         $this->inscrireModel = new InscrireModel();
         $this->conduireModel = new ConduireModel();
+		$this->resultatModel = new ResultatModel();
     }
 
     /**
@@ -178,6 +181,22 @@ class CompteController extends WebController
             ]
         );
     }
+
+	public function results() {
+		$results = $this->resultatModel->getResults();
+
+		return Template::render(
+			"views/utilisateur/compte/results.php",
+			[
+				'titre' => 'Mes résultats',
+				'results' => $results,
+				'eleve' => SessionHelpers::getConnected(),
+                'error' => SessionHelpers::getFlashMessage('error'),
+                'success' => SessionHelpers::getFlashMessage('success'),
+                'info' => SessionHelpers::getFlashMessage('info')
+			]
+		);
+	}
 
     /**
      * Déconnecte l'utilisateur.

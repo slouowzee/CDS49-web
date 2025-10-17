@@ -3,6 +3,7 @@
 namespace models;
 
 use models\base\SQL;
+use utils\SessionHelpers;
 
 /**
  * Champs:
@@ -59,4 +60,19 @@ class ResultatModel extends SQL
             ':nbquestions' => $nbquestions
         ]);
     }
+
+	public function getResults() {
+		$idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
+
+        if (!$idEleve) {
+            return null;
+        }
+
+		$query = "SELECT dateresultat, score, idcategorie FROM resultat WHERE ideleve = :ideleve";
+		$stmt = $this->getPdo()->prepare($query);
+
+		return $stmt->execute([
+            ':ideleve' => $idEleve
+        ]);
+	}
 }
