@@ -150,4 +150,111 @@ class CompteApiController extends WebController
 			'email' => $demande['emaildemandeur']
 		]);
 	}
+
+	    /**
+     * Affiche le formulaire de mot de passe oublié.
+     *
+     * @return string
+     */
+    public function motDePasseOublie(): string
+    {
+        $emailFromUrl = $_GET['email'] ?? null;
+        if ($emailFromUrl && !$this->isPost()) {
+            SessionHelpers::setFlashMessage('show_token_form', true);
+            SessionHelpers::setFlashMessage('email_used', $emailFromUrl);
+            SessionHelpers::setFlashMessage('success', 'Veuillez entrer le code de réinitialisation reçu par email.');
+        }
+
+        if ($this->isPost()) {
+	    $email = $_POST['email'] ?? null;
+	    $token = $_POST['token'] ?? null;
+	    $nouveauMotDePasse = $_POST['nouveau_mot_de_passe'] ?? null;
+	    $confirmMotDePasse = $_POST['confirm_mot_de_passe'] ?? null;
+	    $resendEmail = $_POST['resend_email'] ?? null;
+
+	    if (!empty($resendEmail)) {
+		$compteApi = $this->compteApiModel->getByEmail($resendEmail);
+		if ($compteApi) {
+		    $newToken = bin2hex(random_bytes(3));
+		    $this->compteApiModel->saveResetToken($compteApi['idcompteapi'], $resendEmail, $newToken);
+		    SessionHelpers::setFlashMessage('success', 'Un nouveau jeton de réinitialisation a été envoyé à votre adresse email.');
+		    SessionHelpers::setFlashMessage('show_token_form', true);
+		    SessionHelpers::setFlashMessage('email_used', $resendEmail);
+		} else {
+		    SessionHelpers::setFlashMessage('error', 'Aucun compte trouvé avec cette adresse email.');
+		    SessionHelpers::setFlashMessage('show_token_form', true);
+		}
+	    } elseif (!isset($_POST['token'])) {
+		if (empty($email)) {
+		    SessionHelpers::setFlashMessage('error', 'L\'adresse email est requise.');
+		    $this->redirect('/mot-de-passe-oublie-api.html');
+		}
+
+		$compteApi = $this->compteApiModel->getByEmail($email);
+
+		if (!$compteApi) {
+		    SessionHelpers::setFlashMessage('error', 'Aucun compte trouvé avec cette adresse email.');
+		    $this->redirect('/mot-de-passe-oublie-api.html');
+		} else {
+		    $token = bin2hex(random_bytes(3));
+		    $this->compteApiModel->saveResetToken($compteApi['idcompteapi'], $email, $token);
+
+		    SessionHelpers::setFlashMessage('token', $token);
+		    SessionHelpers::setFlashMessage('email_used', $email);
+		    SessionHelpers::setFlashMessage('success', 'Un jeton de réinitialisation a été envoyé à votre adresse email. Il expire dans 15 minutes.');
+		    $this->redirect('/mot-de-passe-oublie-api.html');
+		}
+	    } else {
+			if (empty($token)) {
+				SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est requis.');
+				SessionHelpers::setFlashMessage('show_token_form', true);
+			} else {
+				if (!empty($nouveauMotDePasse)) {
+					if (empty($confirmMotDePasse)) {
+						SessionHelpers::setFlashMessage('error', 'La confirmation du mot de passe est requise.');
+						SessionHelpers::setFlashMessage('token_valide', $token);
+					} elseif ($nouveauMotDePasse !== $confirmMotDePasse) {
+						SessionHelpers::setFlashMessage('error', 'Les mots de passe ne correspondent pas.');
+						SessionHelpers::setFlashMessage('token_valide', $token);
+					} elseif (!SessionHelpers::validatePassword($nouveauMotDePasse)) {
+						$errorMessage = SessionHelpers::getPasswordValidationError($nouveauMotDePasse);
+						SessionHelpers::setFlashMessage('error', $errorMessage);
+						SessionHelpers::setFlashMessage('token_valide', $token);
+					} else {
+						$success = $this->compteApiModel->resetPasswordWithToken($token, $nouveauMotDePasse);
+
+						if ($success) {
+						SessionHelpers::setFlashMessage('success', 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
+						$this->redirect('/connexion-api.html');
+						} else {
+						SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
+						$this->redirect('/mot-de-passe-oublie-api.html');
+						}
+					}
+				} else {
+					$compteApi = $this->compteApiModel->validateResetToken($token);
+					if (!$compteApi) {
+						SessionHelpers::setFlashMessage('error', 'Le jeton de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
+						SessionHelpers::setFlashMessage('show_token_form', true);
+					} else {
+						SessionHelpers::setFlashMessage('token_valide', $token);
+						SessionHelpers::setFlashMessage('success', 'Jeton validé. Veuillez entrer votre nouveau mot de passe.');
+					}
+				}
+			}
+	    }
+	}
+        return Template::render(
+            "views/utilisateur/document-api/mot-de-passe-oublie-api.php",
+            [
+                'titre' => 'Mot de passe oublié',
+                'error' => SessionHelpers::getFlashMessage('error'),
+                'success' => SessionHelpers::getFlashMessage('success'),
+                'token' => SessionHelpers::getFlashMessage('token'),
+                'token_valide' => SessionHelpers::getFlashMessage('token_valide'),
+                'show_token_form' => SessionHelpers::getFlashMessage('show_token_form'),
+                'email_used' => SessionHelpers::getFlashMessage('email_used')
+            ]
+        );
+    }
 }

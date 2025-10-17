@@ -41,10 +41,13 @@ class Web
 		Route::Add('/connexion-api.html', [$compteApi, 'connexion']);
 		Route::Add('/demande-acces-api.html', [$compteApi, 'demandeAcces']);
 		Route::Add('/creer-compte-api.html', [$compteApi, 'creerCompteApi']);
-        Route::Add('/deconnexion-api.html', [$compteApi, 'deconnexion']);
-        Route::Add('/documentation-api.html', function () {
-            return Template::render('views/global/documentation-api.php');
-        });
+		Route::Add('/mot-de-passe-oublie-api.html', [$compteApi, 'motDePasseOublie']);
+		if (SessionHelpers::isLoginApi()) {
+			Route::Add('/deconnexion-api.html', [$compteApi, 'deconnexion']);
+			Route::Add('/documentation-api.html', function () {
+				return Template::render('views/global/documentation-api.php');
+			});
+		}
 
         // Si l'utilisateur est connecté, ajoute les routes de déconnexion et de compte.
         if (SessionHelpers::isLogin()) {

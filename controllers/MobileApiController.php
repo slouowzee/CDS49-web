@@ -60,6 +60,39 @@ class MobileApiController extends ApiController
         }
     }
 
+	function register() {
+		if (!$this->isPost()) {
+			return $this->errorResponse('Méthode non autorisée', 405);
+		}
+
+		// Lire les données JSON du corps de la requête
+		$data = $this->getJsonData();
+
+		$nom = $data['nom'] ?? null;
+		$prenom = $data['prenom'] ?? null;
+		$telephone = $data['telephone'] ?? null;
+		$email = $data['email'] ?? null;
+		$datenaissance = $data['datenaissance'] ?? null;
+		$motDePasse = $data['motdepasse'] ?? null;
+
+		if (empty($nom) || empty($prenom) || empty($telephone) || empty($email) || empty($datenaissance) || empty($motDePasse)) {
+			return $this->errorResponse('Tous les champs sont requis', 400);
+		}
+
+		$existingUser = $this->eleveModel->getByEmail($email);
+		if ($existingUser) {
+			return $this->errorResponse('Un utilisateur avec cet email existe déjà', 409);
+		}
+
+		$success = $this->eleveModel->creer_eleve($nom, $prenom, $telephone, $email, $motDePasse, $datenaissance);
+
+		if ($success) {
+			return $this->successResponse('Inscription réussie');
+		} else {
+			return $this->errorResponse('Échec de l\'inscription', 500);
+		}
+	}
+
     /**
      * path: /api/profile/get
      * method: GET

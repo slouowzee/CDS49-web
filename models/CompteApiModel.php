@@ -66,11 +66,9 @@ class CompteApiModel extends SQL
 		];
 
 		if ($stmt->execute($params)) {
-			// Générer un token sécurisé pour la création du compte
 			$token = bin2hex(random_bytes(32));
 			$demande_id = $this->getPdo()->lastInsertId();
 			
-			// Sauvegarder le token avec la demande
 			$tokenStmt = $this->getPdo()->prepare("UPDATE demande_acces_api SET token_creation = :token WHERE id = :id");
 			$tokenStmt->execute([':token' => $token, ':id' => $demande_id]);
 			
@@ -97,6 +95,27 @@ class CompteApiModel extends SQL
 		}
 	}
 
+	    /**
+     * Récupère l'ID de l'élève en fonction de son adresse email.
+     * @param string $email
+     * @return array|false Retourne un tableau avec l'ID de l'élève si trouvé, false sinon
+     */
+    public function getByEmail(string $email)
+    {
+		$query = "SELECT idcompteapi FROM compte_api WHERE email = :email LIMIT 1";
+
+		$stmt = $this->getPdo()->prepare($query);
+		$stmt->execute([':email' => $email]);
+
+		$result = $stmt->fetch();
+
+		if ($result) {
+			return $result;
+		} else {
+			return false;
+        }
+    }
+
 	 public function saveResetToken(int $idcompteapi, string $email,string $token): bool
     {
 		$deleteQuery = "DELETE FROM demande_reinitialisation_api WHERE idcompteapi = :idcompteapi";
@@ -114,7 +133,7 @@ class CompteApiModel extends SQL
 			EmailUtils::sendEmail(
 				$email,
 				"Reinitialisation du mot de passe de votre compte API CDS49",
-				"reinitialisation_mot_de_passe_api",
+				"reinitialisation_mot_de_passe",
 				[
 					'token' => $token,
 					'email' => $email,
@@ -179,7 +198,7 @@ class CompteApiModel extends SQL
             EmailUtils::sendEmail(
                 $compte['email'],
                 "Confirmation de changement du mot de passe de votre compte API CDS49",
-                "confirmation_changement_mot_de_passe_api",
+                "confirmation_changement_mot_de_passe",
                 []
             );
         }
