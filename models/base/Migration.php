@@ -2,7 +2,7 @@
 
 namespace models\base;
 
-use mysql_xdevapi\Exception;
+use PDOException;
 
 class Migration extends Database
 {
@@ -12,21 +12,39 @@ class Migration extends Database
 
         echo "=> Start migration of « $filename »\r\n";
 
-        try {
-            $templine = "";
-            $lines = file($filename);
-            foreach ($lines as $line) {
-                if (substr($line, 0, 2) == '--' || $line == '')
-                    continue;
-                $templine .= $line;
-                if (substr(trim($line), -1, 1) == ';') {
-                    $pdo->query($templine);
-                    $templine = '';
-                }
+        $templine = "";
+        $delimiter = ";";
+        $lines = file($filename);
+        
+        foreach ($lines as $lineNum => $line) {
+            // Ignorer les commentaires et lignes vides
+            if (substr($line, 0, 2) == '--' || trim($line) == '')
+                continue;
+            
+            // Gérer le changement de délimiteur
+            if (preg_match('/^\s*DELIMITER\s+(\S+)\s*$/i', $line, $matches)) {
+                $delimiter = $matches[1];
+                continue;
             }
-        } catch (Exception $err){
-            echo "=> Migration fail for « $filename »\r\n";
-            return;
+            
+            $templine .= $line;
+            
+            // Vérifier si la ligne se termine par le délimiteur actuel
+            if (substr(trim($line), -strlen($delimiter)) == $delimiter) {
+                // Retirer le délimiteur personnalisé et ajouter un point-virgule
+                if ($delimiter !== ';') {
+                    $templine = rtrim($templine);
+                    if (substr($templine, -strlen($delimiter)) == $delimiter) {
+                        $templine = substr($templine, 0, -strlen($delimiter)) . ';';
+                    }
+                }
+                
+                $templine = trim($templine);
+                if ($templine) {
+                        $pdo->query($templine);
+                }
+                $templine = '';
+            }
         }
 
         $pdo = null;

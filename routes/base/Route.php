@@ -138,7 +138,7 @@ class Route
                 $refMeth = null;
                 switch (gettype(Route::$routes[$match])) {
                     case 'array':
-                        $refMeth = ReflectionMethod::createFromMethodName(get_class(Route::$routes[$match][0]) . '::' . Route::$routes[$match][1]);
+                        $refMeth = new ReflectionMethod(Route::$routes[$match][0], Route::$routes[$match][1]);
                         break;
                     case 'object':
                         $refMeth = new ReflectionFunction(Route::$routes[$match]);

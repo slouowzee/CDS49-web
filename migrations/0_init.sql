@@ -209,6 +209,52 @@ CREATE TABLE `question` (
   `idcategorie` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
+--
+-- Déchargement des données de la table `question`
+--
+
+INSERT INTO `question` (`idquestion`, `libellequestion`, `imagequestion`, `idcategorie`) VALUES
+(1, 'Ce panneau annonce :', 'image41.jpg', 3),
+(2, 'Je peux dépasser le véhicule blanc par la droite.', 'image42.jpg', 2),
+(3, 'En cas de contrôle par les forces de l\'ordre, je dois présenter :', 'image43.jpg', 2),
+(4, 'Sur autoroute, la bande d\'arrêt d\'urgence est réservée :', 'image44.jpg', 2),
+(5, 'Ce panneau m\'indique :', 'image45.jpg', 3),
+(6, 'Dans cette intersection sans signalisation, je dois céder le passage :', 'image46.jpg', 4),
+(7, 'L\'utilisation du téléphone tenu en main en conduisant est sanctionnée par :', 'image47.jpg', 2),
+(8, 'La distance de sécurité à 90 km/h sur sol sec est d\'environ :', 'image48.jpg', 2),
+(9, 'Ce voyant rouge signifie :', 'image49.jpg', 2),
+(10, 'Le stationnement est considéré comme abusif après une durée ininterrompue de :', 'image50.jpg', 5),
+(11, 'Ce signal lumineux m\'oblige à :', 'image51.jpg', 3),
+(12, 'Un oubli du clignotant est passible :', 'image52.jpg', 2),
+(13, 'En présence d\'un animal sur la chaussée, mon premier réflexe est de :', 'image53.jpg', 2),
+(14, 'Le marquage au sol de couleur bleue indique :', 'image54.jpg', 3),
+(15, 'Sur une route pour automobiles, la vitesse maximale autorisée est de :', 'image55.jpg', 2),
+(16, 'Ce panneau interdit l\'accès :', 'image56.jpg', 3),
+(17, 'Le \"régulateur de vitesse adaptatif\" permet de :', 'image57.jpg', 2),
+(18, 'Circuler sur une voie réservée aux bus est :', 'image58.jpg', 2),
+(19, 'En cas de crevaison sur autoroute, je dois :', 'image59.jpg', 2),
+(20, 'Le feu est vert, mais l\'intersection est encombrée. Je dois :', 'image60.jpg', 4),
+(21, 'Ce panneau indique :', 'image61.jpg', 3),
+(22, 'La conduite accompagnée (AAC) est possible à partir de :', 'image62.jpg', 2),
+(23, 'Par temps de brouillard épais, je peux utiliser :', 'image63.jpg', 2),
+(24, 'La pression des pneus doit être vérifiée :', 'image64.jpg', 2),
+(25, 'Ce panneau met fin à :', 'image65.jpg', 3),
+(26, 'Je m\'apprête à dépasser un cycliste. Je klaxonne pour l\'avertir.', 'image66.jpg', 2),
+(27, 'En agglomération, de nuit, sur une chaussée non éclairée, j\'utilise :', 'image67.jpg', 2),
+(28, 'La durée de la période probatoire pour un conducteur ayant suivi la formation traditionnelle est de :', 'image68.jpg', 2),
+(29, 'Ce panneau signale :', 'image69.jpg', 3),
+(30, 'Un \"aquaplaning\" (ou aquaplanage) se produit lorsque :', 'image70.jpg', 2),
+(31, 'La signalisation m\'autorise à faire demi-tour.', 'image71.jpg', 3),
+(32, 'Le taux légal d\'alcoolémie à ne pas atteindre est de 0,5 g/L de sang, ce qui équivaut à :', 'image72.jpg', 2),
+(33, 'Ce panneau indique que le stationnement est :', 'image73.jpg', 5),
+(34, 'Lors d\'un contrôle technique, une défaillance \"critique\" entraîne :', 'image74.jpg', 2),
+(35, 'Je tracte une caravane dont le PTAC est de 800 kg. Mon permis B est suffisant.', 'image75.jpg', 2),
+(36, 'Cette balise de virage est de couleur :', 'image76.jpg', 3),
+(37, 'Refuser une priorité est sanctionné par :', 'image77.jpg', 4),
+(38, 'Je sors d\'un chemin de terre. Je dois céder le passage.', 'image78.jpg', 4),
+(39, 'Ce panneau signifie :', 'image79.jpg', 3),
+(40, 'Pour limiter la pollution, je peux :', 'image80.jpg', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -434,7 +480,7 @@ ALTER TABLE `moniteur`
 -- AUTO_INCREMENT pour la table `question`
 --
 ALTER TABLE `question`
-  MODIFY `idquestion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `idquestion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT pour la table `resultat`
@@ -507,8 +553,10 @@ DELIMITER $$
 --
 -- Évènements
 --
+DROP EVENT IF EXISTS `delete_old_tokens`$$
 CREATE DEFINER=`ap3_les-supers-nanas-1`@`%` EVENT `delete_old_tokens` ON SCHEDULE EVERY 30 SECOND STARTS '2025-09-14 14:51:18' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM demande_reinitialisation WHERE date_creation < NOW() - INTERVAL 15 MINUTE$$
 
+DROP EVENT IF EXISTS `delete_old_tokens_api`$$
 CREATE DEFINER=`ap3_les-supers-nanas-1`@`%` EVENT `delete_old_tokens_api` ON SCHEDULE EVERY 30 SECOND STARTS '2025-10-17 12:19:52' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM demande_reinitialisation_api
   WHERE date_creation < NOW() - INTERVAL 15 MINUTE$$
 
