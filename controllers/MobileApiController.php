@@ -189,7 +189,6 @@ class MobileApiController extends ApiController
             // TODO: Implémenter la logique pour récupérer les questions par catégorie
         }
 
-
         foreach ($questions as $question) {
             $reponses = $this->reponseModel->getByQuestion($question->idquestion);
             $output[] = [
@@ -200,6 +199,16 @@ class MobileApiController extends ApiController
 
         return $this->successResponse('', $output);
     }
+
+	function getCategorie() {
+		if ($this->isPost()) {
+            return $this->errorResponse('Méthode non autorisée', 405);
+        }
+
+		$categorie = $this->questionModel->getCategorie();
+
+		return $this->successResponse('', $categorie);
+	}
 
     /**
      * path: /api/fin-test

@@ -27,4 +27,10 @@ class QuestionModel extends SQL
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_OBJ);
     }
+
+	public function getCategorie() {
+		$stmt = $this->getPdo()->prepare("SELECT * FROM categorie_question");
+		$stmt->execute();
+		return $stmt->fetchAll(\PDO::FETCH_OBJ);
+	}
 }
