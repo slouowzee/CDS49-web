@@ -28,9 +28,24 @@ class QuestionModel extends SQL
         return $stmt->fetchAll(\PDO::FETCH_OBJ);
     }
 
+    /**
+     * Retourne N questions aléatoires d'une catégorie spécifique.
+     * @param int $count Nombre de questions à retourner
+     * @param int $idcategorie ID de la catégorie
+     * @return array
+     */
+    public function getQuestionsByCategorie(int $count, int $idcategorie): array
+    {
+        $stmt = $this->getPdo()->prepare("SELECT * FROM question WHERE idcategorie = :idcategorie ORDER BY RAND() LIMIT :count");
+        $stmt->bindValue(':idcategorie', $idcategorie, \PDO::PARAM_INT);
+        $stmt->bindValue(':count', $count, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
 	public function getCategorie() {
 		$stmt = $this->getPdo()->prepare("SELECT * FROM categorie_question");
 		$stmt->execute();
-		return $stmt->fetchAll(\PDO::FETCH_OBJ);
+		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 	}
 }

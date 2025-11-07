@@ -120,7 +120,7 @@ class MobileApiController extends ApiController
         }
     }
 
-    /**
+/**
      * path: /api/profile/update
      * method: POST
      * Méthode pour mettre à jour les informations de l'utilisateur.
@@ -161,9 +161,12 @@ class MobileApiController extends ApiController
     }
 
     /**
-     * path: /api/questions/{n}?categorie=random
+     * path: /api/questions/{n}?idcategorie=2
      * method: GET
      * Retourne N questions et leur réponse associée.
+     * Paramètres:
+     * - n: nombre de questions (défaut: 40)
+     * - idcategorie: ID de la catégorie (optionnel, si absent ou =1 => aléatoire)
      */
     function getQuestions(int $n = 40)
     {
@@ -175,18 +178,17 @@ class MobileApiController extends ApiController
             return $this->errorResponse('Le nombre de questions doit être supérieur à zéro', 400);
         }
 
-        $categorie = $_GET['categorie'] ?? null;
+        $idcategorie = isset($_GET['idcategorie']) ? (int)$_GET['idcategorie'] : null;
 
-        // TODO: Implémenter la logique de filtrage par catégorie si nécessaire
         $questions = [];
         $output = [];
 
-
-        // Si la catégorie est null ou 'random', on récupère des questions aléatoires
-        if ($categorie == null || $categorie == 'random') {
+        // Si idcategorie est null ou =1 (Aléatoire), on récupère des questions aléatoires toutes catégories
+        if ($idcategorie === null || $idcategorie === 1) {
             $questions = $this->questionModel->getRandomQuestions($n);
         } else {
-            // TODO: Implémenter la logique pour récupérer les questions par catégorie
+            // Sinon, on récupère les questions de la catégorie spécifique
+            $questions = $this->questionModel->getQuestionsByCategorie($n, $idcategorie);
         }
 
         foreach ($questions as $question) {
@@ -263,5 +265,51 @@ class MobileApiController extends ApiController
         } else {
             return $this->errorResponse('Échec de la sauvegarde du score', 500);
         }
+    }
+
+    /**
+     * path: /api/scores
+     * method: GET
+     * Récupère tous les scores d'un utilisateur avec statistiques.
+     * Paramètres optionnels: ?date_debut=2024-01-01 00:00:00&date_fin=2024-12-31 23:59:59
+     */
+    function getScores()
+    {
+        if ($this->isPost()) {
+            return $this->errorResponse('Méthode non autorisée', 405);
+        }
+
+        $token = $this->getAuthToken();
+
+        if (empty($token)) {
+            return $this->errorResponse('Token requis', 401);
+        }
+
+        // Récupération des paramètres de filtre de période
+        $dateDebut = $_GET['date_debut'] ?? null;
+        $dateFin = $_GET['date_fin'] ?? null;
+
+        // Validation du format de date si fourni
+        if ($dateDebut && !$this->isValidDateTime($dateDebut)) {
+            return $this->errorResponse('Format de date_debut invalide. Utilisez: YYYY-MM-DD HH:MM:SS', 400);
+        }
+        if ($dateFin && !$this->isValidDateTime($dateFin)) {
+            return $this->errorResponse('Format de date_fin invalide. Utilisez: YYYY-MM-DD HH:MM:SS', 400);
+        }
+
+        $result = $this->resultatModel->getScoresWithStatistics($token, $dateDebut, $dateFin);
+
+        return $this->successResponse('Scores récupérés avec succès', $result);
+    }
+
+    /**
+     * Valide le format de date/heure.
+     * @param string $dateTime
+     * @return bool
+     */
+    private function isValidDateTime(string $dateTime): bool
+    {
+        $d = \DateTime::createFromFormat('Y-m-d H:i:s', $dateTime);
+        return $d && $d->format('Y-m-d H:i:s') === $dateTime;
     }
 }

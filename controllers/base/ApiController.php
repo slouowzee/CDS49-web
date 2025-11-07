@@ -68,6 +68,7 @@ class ApiController implements IBase
     protected function successResponse(string $message, array $data = []): string
     {
         $this->allowCORS();
+        header('Content-Type: application/json; charset=utf-8');
 
         return json_encode([
             'status' => 'success',
@@ -86,6 +87,7 @@ class ApiController implements IBase
     protected function errorResponse(string $message, int $code = 400): string
     {
         $this->allowCORS();
+        header('Content-Type: application/json; charset=utf-8');
 
         http_response_code($code);
         return json_encode([

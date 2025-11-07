@@ -114,7 +114,7 @@ class EleveModel extends SQL
 
         $result = $this->getPdo()->prepare($query);
         $result->execute($params);
-        $eleve = $result->fetch();
+        $eleve = $result->fetch(\PDO::FETCH_ASSOC);
 
         if ($eleve && password_verify($motDePasse . $_ENV['PEPPER'], $eleve['motpasseeleve'])) {
             SessionHelpers::login($eleve);
@@ -204,10 +204,14 @@ class EleveModel extends SQL
 
     public function getByToken(string $token)
     {
-        $query = "SELECT ideleve FROM token WHERE token = :token LIMIT 1";
+        $query = "SELECT e.ideleve, e.nomeleve, e.prenomeleve, e.teleleve, e.emaileleve, e.datenaissanceeleve 
+                  FROM token t 
+                  JOIN eleve e ON t.ideleve = e.ideleve 
+                  WHERE t.token = :token 
+                  LIMIT 1";
         $stmt = $this->getPdo()->prepare($query);
         $stmt->execute([':token' => $token]);
-        $result = $stmt->fetch();
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$result) {
             return null;

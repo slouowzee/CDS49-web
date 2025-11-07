@@ -20,5 +20,6 @@ class Api
         Route::Add('/api/questions/{n}', [$mobileApiController, 'getQuestions']);
 		Route::Add('/api/categorie', [$mobileApiController, 'getCategorie']);
         Route::Add('/api/fin-test', [$mobileApiController, 'saveScore']);
+        Route::Add('/api/scores', [$mobileApiController, 'getScores']);
     }
 }
