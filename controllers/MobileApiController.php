@@ -40,7 +40,6 @@ class MobileApiController extends ApiController
             return $this->errorResponse('Méthode non autorisée', 405);
         }
 
-        // Lire les données JSON du corps de la requête
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
 
@@ -213,59 +212,37 @@ class MobileApiController extends ApiController
 	}
 
     /**
-     * path: /api/fin-test
+     * path: /api/scores/set
      * method: POST
      * Sauvegarde du score de l'élève.
      */
-    function saveScore()
-    {
-        if (!$this->isPost()) {
-            return $this->errorResponse('Méthode non autorisée', 405);
-        }
+    function setScores() {
+		$data = $this->getJsonData();
 
-        // Récupération depuis l'en-tête (Bearer token), on ne garde que le token
-        $token = $this->getAuthToken();
-        $success = false;
+		if (empty($data['token'])) {
+			return $this->errorResponse('Token requis', 401);
+		}
+		if (!$this->isPost()) {
+			return $this->errorResponse('Méthode non autorisée', 405);
+		}
 
-        /**
-         * Data est un JSON qui contient :
-         * {score: 1234, nbquestions: 40}
-         */
-        $data = $this->getJsonData();
+		$id = $data['id'] ?? null;
+		$score = $data['score'] ?? null;
+		$nbquestions = $data['nbquestions'] ?? null;
+		$idcategorie = $data['idcategorie'] ?? 1;
 
-        $score = $data['score'] ?? null;
-        $nbQuestions = $data['nbquestions'] ?? null;
+		if (!is_numeric($score) || !is_numeric($nbquestions) || (int)$score < 0 || (int)$score > 40 || (int)$nbquestions <= 0 || (int)$nbquestions > 40) {
+			return $this->errorResponse('Erreur dans la requête.', 400);
+		}
 
-        if (empty($score) || empty($nbQuestions)) {
-            return $this->errorResponse('Score et nombre de questions requis', 400);
-        }
+$success = $this->resultatModel->saveScoreByToken($data['token'], (int)$score, (int)$nbquestions, (int)$idcategorie);
+		if ($success) {
+			return $this->successResponse('Score sauvegardé avec succès');
+		} else {
+			return $this->errorResponse('Échec de la sauvegarde du score', 500);
+		}
+	}
 
-        // Récupération du connecté dans la session
-        if (!$token && SessionHelpers::getConnected()) {
-            // Id de l'élève connecté
-            $ideleve = SessionHelpers::getConnected()['ideleve'] ?? null;
-
-            if (empty($ideleve)) {
-                return $this->errorResponse('Vous devez être connecté pour sauvegarder un score', 401);
-            }
-
-            // Sauvegarde du score dans la base de données par ID d'élève
-            $success = $this->resultatModel->saveScoreById($ideleve, $score, $nbQuestions);
-        } else {
-            if (empty($token)) {
-                return $this->errorResponse('Token requis', 401);
-            }
-
-            // Sauvegarde du score dans la base de données
-            $success = $this->resultatModel->saveScoreByToken($token, $score, $nbQuestions);
-        }
-
-        if ($success) {
-            return $this->successResponse('Score sauvegardé avec succès');
-        } else {
-            return $this->errorResponse('Échec de la sauvegarde du score', 500);
-        }
-    }
 
     /**
      * path: /api/scores
@@ -285,11 +262,9 @@ class MobileApiController extends ApiController
             return $this->errorResponse('Token requis', 401);
         }
 
-        // Récupération des paramètres de filtre de période
         $dateDebut = $_GET['date_debut'] ?? null;
         $dateFin = $_GET['date_fin'] ?? null;
 
-        // Validation du format de date si fourni
         if ($dateDebut && !$this->isValidDateTime($dateDebut)) {
             return $this->errorResponse('Format de date_debut invalide. Utilisez: YYYY-MM-DD HH:MM:SS', 400);
         }

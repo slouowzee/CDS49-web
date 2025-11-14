@@ -199,6 +199,37 @@ class CompteController extends WebController
 	}
 
     /**
+     * Affiche les détails d'une leçon de conduite
+     */
+    public function detailsLecon(): string
+    {
+        $idlecon = $_GET['idlecon'] ?? null;
+        
+        if (!$idlecon || !is_numeric($idlecon)) {
+            SessionHelpers::setFlashMessage('error', 'Leçon introuvable.');
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        $lecon = $this->conduireModel->getLeconDetails((int)$idlecon);
+        
+        if (!$lecon) {
+            SessionHelpers::setFlashMessage('error', 'Leçon introuvable.');
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        return Template::render(
+            "views/utilisateur/compte/details_lecon.php",
+            [
+                'titre' => 'Détails de la leçon',
+                'lecon' => $lecon,
+                'eleve' => SessionHelpers::getConnected(),
+                'error' => SessionHelpers::getFlashMessage('error'),
+                'success' => SessionHelpers::getFlashMessage('success')
+            ]
+        );
+    }
+
+    /**
      * Déconnecte l'utilisateur.
      *
      * @return void

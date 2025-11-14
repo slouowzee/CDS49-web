@@ -23,24 +23,35 @@ class ResultatModel extends SQL
     /**
      * Sauvegarde le score d'un élève par son ID.
      * @param int $idEleve L'ID de l'élève.
+	 * @param int $score Le score obtenu.
+	 * @param int $nbquestions Le nombre de questions.
+	 * @param int $idcategorie L'ID de la catégorie.
+	 * @param string $token Le token de l'élève.
      */
-    public function saveScoreById(int $idEleve, int $score, int $nbquestions): bool
+    public function saveScoreById(int $idEleve, int $score, int $nbquestions, int $idcategorie, string $token): bool
     {
-        // Préparer la requête pour insérer le score
-        $query = "INSERT INTO resultat (ideleve, dateresultat, score, nbquestions) VALUES (:ideleve, NOW(), :score, :nbquestions)";
+		$eleveModel = new EleveModel();
+		$eleve = $eleveModel->getByToken($token);
+		if (!$eleve) {
+			error_log("ResultatModel: Élève non trouvé pour le token");
+			return false;
+		}
+
+        $query = "INSERT INTO resultat (ideleve, dateresultat, score, nbquestions, idcategorie) VALUES (:ideleve, NOW(), :score, :nbquestions, :idcategorie)";
         $stmt = $this->getPdo()->prepare($query);
 
         return $stmt->execute([
             ':ideleve' => $idEleve,
             ':score' => $score,
-            ':nbquestions' => $nbquestions
+            ':nbquestions' => $nbquestions,
+            ':idcategorie' => $idcategorie
         ]);
     }
 
     /**
      * Sauvegarde du score par un token d'élève.
      */
-    public function saveScoreByToken(string $token, int $score, int $nbquestions): bool
+    public function saveScoreByToken(string $token, int $score, int $nbquestions, int $idcategorie ): bool
 {
     // Récupération de l'élève par son token
     $eleveModel = new EleveModel();
@@ -64,7 +75,7 @@ class ResultatModel extends SQL
     }
 
     // Préparer la requête pour insérer le score
-    $query = "INSERT INTO resultat (ideleve, dateresultat, score, nbquestions) VALUES (:ideleve, NOW(), :score, :nbquestions)";
+    $query = "INSERT INTO resultat (ideleve, dateresultat, score, nbquestions,idcategorie) VALUES (:ideleve, NOW(), :score, :nbquestions,:idcategorie)";
     $stmt = $this->getPdo()->prepare($query);
 
     try {
@@ -72,6 +83,7 @@ class ResultatModel extends SQL
             ':ideleve' => $idEleve,
             ':score' => $score,
             ':nbquestions' => $nbquestions
+            ,':idcategorie' => $idcategorie
         ]);
         
         if ($result) {
@@ -89,15 +101,16 @@ class ResultatModel extends SQL
 		$idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
 
         if (!$idEleve) {
-            return null;
+            return [];
         }
 
-		$query = "SELECT dateresultat, score, idcategorie FROM resultat WHERE ideleve = :ideleve";
+		$query = "SELECT dateresultat, score, nbquestions FROM resultat WHERE ideleve = :ideleve ORDER BY dateresultat DESC";
 		$stmt = $this->getPdo()->prepare($query);
-
-		return $stmt->execute([
+		$stmt->execute([
             ':ideleve' => $idEleve
         ]);
+
+		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
     /**

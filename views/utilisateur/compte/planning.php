@@ -100,7 +100,10 @@
                 <?php foreach ($planning['planning'] as $lecon) { ?> {
                         title: '<?= htmlspecialchars($lecon['title']) ?>',
                         start: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['start'])) ?>',
-                        end: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['end'])) ?>'
+                        end: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['end'])) ?>',
+                        extendedProps: {
+                            idlecon: <?= $lecon['idlecon'] ?>
+                        }
                     },
                 <?php } ?>
             ],
@@ -111,6 +114,15 @@
                 week: 'Semaine',
                 day: 'Jour',
                 list: 'Liste'
+            },
+            eventClick: function(info) {
+                // Rediriger vers la page de détails avec l'ID de la leçon
+                const idlecon = info.event.extendedProps.idlecon;
+                window.location.href = '/mon-compte/planning/details.html?idlecon=' + idlecon;
+            },
+            eventMouseEnter: function(info) {
+                // Changer le curseur pour indiquer que l'événement est cliquable
+                info.el.style.cursor = 'pointer';
             }
         });
         calendar.render();

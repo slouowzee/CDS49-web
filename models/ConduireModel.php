@@ -9,9 +9,10 @@ use utils\SessionHelpers;
 
 /**
  * Champs:
- * - ideleve (int, PK)
- * - idvehicule (int, PK)
- * - idmoniteur (int, PK)
+ * - idlecon (int, PK, AUTO_INCREMENT)
+ * - ideleve (int)
+ * - idvehicule (int)
+ * - idmoniteur (int)
  * - heuredebut (datetime)
  * - lieurdv (varchar)
  */
@@ -43,9 +44,14 @@ class ConduireModel extends SQL
         // On Compte le nombre de leçons plannifiées
         foreach ($lessons as $lesson) {
             $planning[] = [
+                'idlecon' => $lesson->idlecon,
                 'start' => $lesson->heuredebut,
                 'end' => date('Y-m-d H:i', strtotime($lesson->heuredebut) + 3600), // Durée de 1 heure
-                'title' => "Leçon de conduite"
+                'title' => "Leçon de conduite",
+                'heuredebut' => $lesson->heuredebut,
+                'idvehicule' => $lesson->idvehicule,
+                'idmoniteur' => $lesson->idmoniteur,
+                'lieurdv' => $lesson->lieurdv
             ];
         }
 
@@ -74,5 +80,32 @@ class ConduireModel extends SQL
             'nbLeconsRestantes' => $nbLeconsRestantes,
             'prochainRdv' => $prochainRdv
         ];
+    }
+
+    /**
+     * Récupère les détails d'une leçon spécifique par ID de leçon
+     */
+    public function getLeconDetails(int $idlecon): ?object
+    {
+        $idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
+        
+        if (!$idEleve) {
+            return null;
+        }
+
+        $stmt = $this->getPdo()->prepare("
+            SELECT c.*, m.nommoniteur, m.prenommoniteur, v.designation, v.immatriculation, v.manuel, v.nbpassagers
+            FROM conduire c
+            LEFT JOIN moniteur m ON c.idmoniteur = m.idmoniteur
+            LEFT JOIN vehicule v ON c.idvehicule = v.idvehicule
+            WHERE c.ideleve = :ideleve AND c.idlecon = :idlecon
+        ");
+        
+        $stmt->execute([
+            ':ideleve' => $idEleve,
+            ':idlecon' => $idlecon
+        ]);
+        
+        return $stmt->fetch(PDO::FETCH_OBJ) ?: null;
     }
 }

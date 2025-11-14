@@ -123,13 +123,25 @@ class EleveModel extends SQL
         }
 
         if ($token && !empty($eleve)) {
-            $query = "INSERT INTO token (ideleve, token, date_creation) VALUES (:ideleve, :token, NOW())";
-            $stmt = $this->getPdo()->prepare($query);
-            $params = [
-                ':ideleve' => $eleve['ideleve'],
-                ':token' => $token
-            ];
-            $stmt->execute($params);
+			$query = "SELECT * FROM token WHERE ideleve = :ideleve LIMIT 1";
+			$stmt = $this->getPdo()->prepare($query);
+			if ($stmt->execute([':ideleve' => $eleve['ideleve']]) && $stmt->rowCount() > 0) {
+				$updateQuery = "UPDATE token SET token = :token, date_creation = NOW() WHERE ideleve = :ideleve";
+				$updateStmt = $this->getPdo()->prepare($updateQuery);
+				$params = [
+					':ideleve' => $eleve['ideleve'],
+					':token' => $token
+				];
+				$updateStmt->execute($params);
+			} else {
+				$insertQuery = "INSERT INTO token (ideleve, token, date_creation) VALUES (:ideleve, :token, NOW())";
+				$insertStmt = $this->getPdo()->prepare($insertQuery);
+				$params = [
+					':ideleve' => $eleve['ideleve'],
+					':token' => $token
+				];
+				$insertStmt->execute($params);
+			}
         }
 
 
@@ -204,10 +216,10 @@ class EleveModel extends SQL
 
     public function getByToken(string $token)
     {
-        $query = "SELECT e.ideleve, e.nomeleve, e.prenomeleve, e.teleleve, e.emaileleve, e.datenaissanceeleve 
-                  FROM token t 
-                  JOIN eleve e ON t.ideleve = e.ideleve 
-                  WHERE t.token = :token 
+        $query = "SELECT *
+                  FROM eleve
+                  JOIN token ON token.ideleve = eleve.ideleve 
+                  WHERE token.token = :token 
                   LIMIT 1";
         $stmt = $this->getPdo()->prepare($query);
         $stmt->execute([':token' => $token]);
