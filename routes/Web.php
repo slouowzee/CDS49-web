@@ -54,6 +54,7 @@ class Web
             Route::Add('/deconnexion.html', [$compte, 'deconnexion']);
             Route::Add('/mon-compte/planning.html', [$compte, 'planning']);
             Route::Add('/mon-compte/planning/details.html', [$compte, 'detailsLecon']);
+            Route::Add('/mon-compte/planning/annuler-lecon.html', [$compte, 'annulerLecon']);
 			Route::Add('/mon-compte/results.html', [$compte, 'results']);
             Route::Add('/mon-compte/profil.html', [$compte, 'mesInformations']);
             Route::Add('/mon-compte/changer-mot-de-passe.html', [$compte, 'changerMotDePasse']);

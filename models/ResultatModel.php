@@ -104,7 +104,11 @@ class ResultatModel extends SQL
             return [];
         }
 
-		$query = "SELECT dateresultat, score, nbquestions FROM resultat WHERE ideleve = :ideleve ORDER BY dateresultat DESC";
+		$query = "SELECT r.dateresultat, r.score, r.nbquestions, c.libcategorie 
+		          FROM resultat r
+		          LEFT JOIN categorie_question c ON r.idcategorie = c.idcategorie
+		          WHERE r.ideleve = :ideleve 
+		          ORDER BY r.dateresultat DESC";
 		$stmt = $this->getPdo()->prepare($query);
 		$stmt->execute([
             ':ideleve' => $idEleve

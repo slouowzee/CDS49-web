@@ -230,6 +230,55 @@ class CompteController extends WebController
     }
 
     /**
+     * Annule une leçon de conduite
+     */
+    public function annulerLecon(): void
+    {
+        if (!$this->isPost()) {
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        $idlecon = $_POST['idlecon'] ?? null;
+        
+        if (!$idlecon || !is_numeric($idlecon)) {
+            SessionHelpers::setFlashMessage('error', 'Leçon introuvable.');
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        $lecon = $this->conduireModel->getLeconDetails((int)$idlecon);
+        
+        if (!$lecon) {
+            SessionHelpers::setFlashMessage('error', 'Leçon introuvable.');
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        // Vérifier que la leçon est dans plus de 48h
+        $now = time();
+        $leconTime = strtotime($lecon->heuredebut);
+        $diffHours = ($leconTime - $now) / 3600;
+        
+        if ($diffHours <= 48) {
+            SessionHelpers::setFlashMessage('error', 'Cette leçon ne peut plus être annulée (moins de 48h avant le début).');
+            $this->redirect('/mon-compte/planning/details.html?idlecon=' . $idlecon);
+        }
+
+        // Supprimer la leçon
+        $success = $this->conduireModel->deleteLecon((int)$idlecon);
+        
+        if ($success) {
+            // Envoyer un email de confirmation
+            $eleve = SessionHelpers::getConnected();
+            $this->conduireModel->sendCancellationEmail($eleve, $lecon);
+            
+            SessionHelpers::setFlashMessage('success', 'La leçon a été annulée avec succès. Un email de confirmation vous a été envoyé.');
+        } else {
+            SessionHelpers::setFlashMessage('error', 'Une erreur est survenue lors de l\'annulation de la leçon.');
+        }
+        
+        $this->redirect('/mon-compte/planning.html');
+    }
+
+    /**
      * Déconnecte l'utilisateur.
      *
      * @return void

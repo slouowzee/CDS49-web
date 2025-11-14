@@ -36,11 +36,11 @@
                                 
                                 <div class="table-responsive">
                                     <table id="resultsTable" class="table table-striped table-hover">
-                                        <thead class="table-dark">
+                                        <thead>
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Score</th>
-                                                <th>Résultat</th>
+                                                <th>Catégorie</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -49,6 +49,7 @@
                                                 $nbquestions = (int)$result['nbquestions'];
                                                 $pourcentage = $nbquestions > 0 ? round(($score / $nbquestions) * 100, 1) : 0;
                                                 $dateFormatted = date('d/m/Y à H:i', strtotime($result['dateresultat']));
+                                                $categorie = $result['libcategorie'] ?? 'Non spécifiée';
                                                 
                                                 // Déterminer la classe CSS selon le score
                                                 $scoreClass = '';
@@ -67,74 +68,13 @@
                                                 <td class="<?= $scoreClass ?>" data-sort="<?= $score ?>">
                                                     <?= $score ?> / <?= $nbquestions ?>
                                                 </td>
-                                                <td class="<?= $scoreClass ?>" data-sort="<?= $pourcentage ?>">
-                                                    <?= $pourcentage ?>%
-                                                    <?php if ($pourcentage >= 75) { ?>
-                                                        <i class="fas fa-check-circle ms-1"></i>
-                                                    <?php } elseif ($pourcentage >= 50) { ?>
-                                                        <i class="fas fa-exclamation-circle ms-1"></i>
-                                                    <?php } else { ?>
-                                                        <i class="fas fa-times-circle ms-1"></i>
-                                                    <?php } ?>
+                                                <td data-sort="<?= htmlspecialchars($categorie) ?>">
+                                                    <?= htmlspecialchars($categorie) ?>
                                                 </td>
                                             </tr>
                                             <?php } ?>
                                         </tbody>
                                     </table>
-                                </div>
-
-                                <!-- Statistiques rapides -->
-                                <div class="row mt-4">
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Score Moyen</h5>
-                                                <p class="card-text fs-3 fw-bold text-primary">
-                                                    <?php
-                                                    $totalScore = 0;
-                                                    $totalQuestions = 0;
-                                                    foreach ($results as $result) {
-                                                        $totalScore += (int)$result['score'];
-                                                        $totalQuestions += (int)$result['nbquestions'];
-                                                    }
-                                                    $moyennePourcentage = $totalQuestions > 0 ? round(($totalScore / $totalQuestions) * 100, 1) : 0;
-                                                    echo $moyennePourcentage;
-                                                    ?>%
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Meilleur Score</h5>
-                                                <p class="card-text fs-3 fw-bold text-success">
-                                                    <?php
-                                                    $bestPourcentage = 0;
-                                                    foreach ($results as $result) {
-                                                        $score = (int)$result['score'];
-                                                        $nbquestions = (int)$result['nbquestions'];
-                                                        $pourcentage = $nbquestions > 0 ? round(($score / $nbquestions) * 100, 1) : 0;
-                                                        if ($pourcentage > $bestPourcentage) {
-                                                            $bestPourcentage = $pourcentage;
-                                                        }
-                                                    }
-                                                    echo $bestPourcentage;
-                                                    ?>%
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Total Quiz</h5>
-                                                <p class="card-text fs-3 fw-bold text-info">
-                                                    <?= count($results) ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
 
                             <?php } else { ?>
@@ -167,7 +107,7 @@ $(document).ready(function() {
         headers: {
             0: { sorter: 'digit' }, // Date (utilise data-sort avec timestamp)
             1: { sorter: 'digit' }, // Score
-            2: { sorter: 'digit' }  // Pourcentage
+            2: { sorter: 'text' }  // Catégorie
         }
     });
 });

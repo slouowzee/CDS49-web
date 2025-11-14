@@ -108,4 +108,50 @@ class ConduireModel extends SQL
         
         return $stmt->fetch(PDO::FETCH_OBJ) ?: null;
     }
+
+    /**
+     * Supprime une leçon de conduite
+     */
+    public function deleteLecon(int $idlecon): bool
+    {
+        $idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
+        
+        if (!$idEleve) {
+            return false;
+        }
+
+        $stmt = $this->getPdo()->prepare("
+            DELETE FROM conduire 
+            WHERE idlecon = :idlecon AND ideleve = :ideleve
+        ");
+        
+        return $stmt->execute([
+            ':idlecon' => $idlecon,
+            ':ideleve' => $idEleve
+        ]);
+    }
+
+    /**
+     * Envoie un email de confirmation d'annulation de leçon
+     */
+    public function sendCancellationEmail(array $eleve, object $lecon): bool
+    {
+        $emailUtils = new \utils\EmailUtils();
+        
+        $subject = "Confirmation annulation de lecon - CDS 49";
+        
+        $data = [
+            'prenom' => $eleve['prenomeleve'],
+            'dateLecon' => date('d/m/Y à H:i', strtotime($lecon->heuredebut)),
+            'moniteur' => $lecon->prenommoniteur . ' ' . $lecon->nommoniteur,
+            'lieu' => $lecon->lieurdv ?? 'Non spécifié'
+        ];
+        
+        return $emailUtils->sendEmail(
+            $eleve['emaileleve'],
+            $subject,
+            'confirmation_annulation_lecon',
+            $data
+        );
+    }
 }
