@@ -63,7 +63,17 @@
 
                     <?php if ($forfait) { ?>
                         <div>
-                            <h2 class="display-5 mb-3">Planning des passages</h2>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="display-5 mb-0">Planning des passages</h2>
+                                <button type="button" 
+                                        class="btn btn-primary btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#demandeHeureModal"
+                                        <?= $demandeEnCours ? 'disabled' : '' ?>>
+                                    <i class="fas fa-plus-circle me-1"></i>
+                                    <?= $demandeEnCours ? 'Demande en cours' : 'Demander des heures' ?>
+                                </button>
+                            </div>
                             <p>Voici vos heures de conduite planifiées :</p>
                             <!-- Conteneur pour FullCalendar -->
                             <div id='calendar'></div>
@@ -78,6 +88,37 @@
         </div>
     </section>
 </main>
+
+<!-- Modal de demande d'heures supplémentaires -->
+<div class="modal fade" id="demandeHeureModal" tabindex="-1" aria-labelledby="demandeHeureModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/mon-compte/demande-heure-supplementaire.html">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="demandeHeureModalLabel">Demander des heures supplémentaires</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Vous pouvez ajouter un commentaire pour préciser vos disponibilités ou besoins particuliers.</p>
+                    <div class="mb-3">
+                        <label for="commentaire" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" 
+                                  id="commentaire" 
+                                  name="commentaire" 
+                                  rows="4" 
+                                  placeholder="Ex: Disponible en semaine après 18h ou le samedi matin..."
+                                  maxlength="500"></textarea>
+                        <div class="form-text">Maximum 500 caractères</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <script>
@@ -100,10 +141,7 @@
                 <?php foreach ($planning['planning'] as $lecon) { ?> {
                         title: '<?= htmlspecialchars($lecon['title']) ?>',
                         start: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['start'])) ?>',
-                        end: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['end'])) ?>',
-                        extendedProps: {
-                            idlecon: <?= $lecon['idlecon'] ?>
-                        }
+                        end: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['end'])) ?>'
                     },
                 <?php } ?>
             ],
@@ -114,15 +152,6 @@
                 week: 'Semaine',
                 day: 'Jour',
                 list: 'Liste'
-            },
-            eventClick: function(info) {
-                // Rediriger vers la page de détails avec l'ID de la leçon
-                const idlecon = info.event.extendedProps.idlecon;
-                window.location.href = '/mon-compte/planning/details.html?idlecon=' + idlecon;
-            },
-            eventMouseEnter: function(info) {
-                // Changer le curseur pour indiquer que l'événement est cliquable
-                info.el.style.cursor = 'pointer';
             }
         });
         calendar.render();

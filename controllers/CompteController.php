@@ -168,6 +168,9 @@ class CompteController extends WebController
         // Récupération du planning de l'utilisateur connecté (modèle conduire)
         $planning = $this->conduireModel->getLessonsByEleve();
 
+        // Vérifie si une demande est en cours
+        $demandeEnCours = $this->eleveModel->aDemandeEnCours();
+
         return Template::render(
             "views/utilisateur/compte/planning.php",
             [
@@ -175,6 +178,7 @@ class CompteController extends WebController
                 'forfait' => $forfait,
                 'planning' => $planning,
                 'eleve' => SessionHelpers::getConnected(),
+                'demandeEnCours' => $demandeEnCours,
                 'error' => SessionHelpers::getFlashMessage('error'),
                 'success' => SessionHelpers::getFlashMessage('success'),
                 'info' => SessionHelpers::getFlashMessage('info')
@@ -275,6 +279,28 @@ class CompteController extends WebController
             SessionHelpers::setFlashMessage('error', 'Une erreur est survenue lors de l\'annulation de la leçon.');
         }
         
+        $this->redirect('/mon-compte/planning.html');
+    }
+
+    /**
+     * Traite la demande d'heures supplémentaires
+     */
+    public function demandeHeureSupplementaire(): void
+    {
+        if (!$this->isPost()) {
+            $this->redirect('/mon-compte/planning.html');
+        }
+
+        $commentaire = $_POST['commentaire'] ?? null;
+
+        $success = $this->conduireModel->creerDemandeHeureSupplementaire($commentaire);
+
+        if ($success) {
+            SessionHelpers::setFlashMessage('success', 'Votre demande a été enregistrée avec succès. Nos équipes vous contacteront prochainement.');
+        } else {
+            SessionHelpers::setFlashMessage('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande.');
+        }
+
         $this->redirect('/mon-compte/planning.html');
     }
 

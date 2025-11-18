@@ -406,4 +406,52 @@ class EleveModel extends SQL
         
         return $success;
     }
+
+    /**
+     * Vérifie si l'élève connecté a une demande en attente
+     * @return bool
+     */
+    public function aDemandeEnCours(): bool
+    {
+        $idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
+        
+        if (!$idEleve) {
+            return false;
+        }
+
+        $stmt = $this->getPdo()->prepare("
+            SELECT COUNT(*) as nb
+            FROM demande_heure_conduite
+            WHERE ideleve = :ideleve AND statut = 0
+        ");
+        
+        $stmt->execute([':ideleve' => $idEleve]);
+        $result = $stmt->fetch();
+        
+        return ($result['nb'] ?? 0) > 0;
+    }
+
+    /**
+     * Crée une demande d'heures supplémentaires pour l'élève connecté
+     * @param string|null $commentaire Commentaire optionnel (ex: disponibilités)
+     * @return bool
+     */
+    public function creerDemandeHeureSupplementaire(?string $commentaire = null): bool
+    {
+        $idEleve = SessionHelpers::getConnected()['ideleve'] ?? null;
+        
+        if (!$idEleve) {
+            return false;
+        }
+
+        $stmt = $this->getPdo()->prepare("
+            INSERT INTO demande_heure_conduite (ideleve, commentaire, statut, datedemande)
+            VALUES (:ideleve, :commentaire, 0, NOW())
+        ");
+        
+        return $stmt->execute([
+            ':ideleve' => $idEleve,
+            ':commentaire' => $commentaire
+        ]);
+    }
 }

@@ -277,6 +277,12 @@ $success = $this->resultatModel->saveScoreByToken($data['token'], (int)$score, (
         return $this->successResponse('Scores récupérés avec succès', $result);
     }
 
+    function envoiDocument(){
+        
+    }
+
+    
+
     /**
      * Valide le format de date/heure.
      * @param string $dateTime
