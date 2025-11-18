@@ -277,9 +277,7 @@ $success = $this->resultatModel->saveScoreByToken($data['token'], (int)$score, (
         return $this->successResponse('Scores récupérés avec succès', $result);
     }
 
-    function envoiDocument(){
-        
-    }
+    
 
     
 

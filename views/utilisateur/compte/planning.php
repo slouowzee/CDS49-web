@@ -2,6 +2,15 @@
     <section id="espace-connecte">
         <h1 class="mb-4">Mon Espace</h1>
 
+        <style>
+            .cursor-pointer {
+                cursor: pointer;
+            }
+            .fc-event:hover {
+                opacity: 0.8;
+            }
+        </style>
+
         <?php if (!empty($error)) { ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>
@@ -139,6 +148,7 @@
             },
             events: [
                 <?php foreach ($planning['planning'] as $lecon) { ?> {
+                        id: '<?= $lecon['idlecon'] ?>',
                         title: '<?= htmlspecialchars($lecon['title']) ?>',
                         start: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['start'])) ?>',
                         end: '<?= date('Y-m-d\TH:i:s', strtotime($lecon['end'])) ?>'
@@ -152,7 +162,12 @@
                 week: 'Semaine',
                 day: 'Jour',
                 list: 'Liste'
-            }
+            },
+            eventClick: function(info) {
+                // Redirection vers la page de détails de la leçon
+                window.location.href = '/mon-compte/planning/details.html?idlecon=' + info.event.id;
+            },
+            eventClassNames: 'cursor-pointer'
         });
         calendar.render();
     });
