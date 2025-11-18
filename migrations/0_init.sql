@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : db:3306
--- Généré le : ven. 17 oct. 2025 à 13:31
+-- Généré le : mar. 18 nov. 2025 à 08:33
 -- Version du serveur : 8.4.1
 -- Version de PHP : 8.2.8
 
@@ -74,6 +74,7 @@ CREATE TABLE `compte_api` (
 --
 
 CREATE TABLE `conduire` (
+  `idlecon` int NOT NULL,
   `ideleve` int NOT NULL,
   `idvehicule` int NOT NULL,
   `idmoniteur` int NOT NULL,
@@ -93,6 +94,20 @@ CREATE TABLE `demande_acces_api` (
   `date_demande` datetime NOT NULL,
   `ip_demande` varchar(255) NOT NULL,
   `token_creation` varchar(64) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `demande_heure_conduite`
+--
+
+CREATE TABLE `demande_heure_conduite` (
+  `id` int NOT NULL,
+  `ideleve` int NOT NULL,
+  `statut` int NOT NULL,
+  `datedemande` datetime NOT NULL,
+  `commentaire` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -129,7 +144,7 @@ CREATE TABLE `eleve` (
   `ideleve` int NOT NULL,
   `nomeleve` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `prenomeleve` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `teleleve` varchar(255) COLLATE utf8mb3_bin DEFAULT NULL,
+  `teleleve` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   `emaileleve` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `motpasseeleve` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   `datenaissanceeleve` date NOT NULL
@@ -184,17 +199,6 @@ CREATE TABLE `moniteur` (
   `prenommoniteur` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `emailmoniteur` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
---
--- Déchargement des données de la table `moniteur`
---
-
-INSERT INTO `moniteur` (`idmoniteur`, `nommoniteur`, `prenommoniteur`, `emailmoniteur`) VALUES
-(1, 'John', 'Doe', 'jdoe@proton.me'),
-(2, 'Sarrazin', 'Paul', 'paul.Sarr4@orange.fr'),
-(3, 'Manin', 'Lydie', 'lmanin@gmail.com'),
-(4, 'Duperray', 'Valentina', 'dv1999@gmail.com'),
-(5, 'Pilet', 'Gaël', 'gael.pilet1@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -388,20 +392,6 @@ INSERT INTO `reponse` (`idquestion`, `numreponse`, `libellereponse`, `valide`) V
 (40, 2, 'Vérifier régulièrement la pression des pneus.', 1),
 (40, 3, 'Utiliser le régulateur de vitesse.', 1);
 
-
--- --------------------------------------------------------
-
---
--- Structure de la table `reponse`
---
-
-CREATE TABLE `reponse` (
-  `idquestion` int NOT NULL,
-  `numreponse` int NOT NULL,
-  `libellereponse` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `valide` tinyint(1) DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
 -- --------------------------------------------------------
 
 --
@@ -412,8 +402,9 @@ CREATE TABLE `resultat` (
   `idresultat` int NOT NULL,
   `ideleve` int NOT NULL,
   `dateresultat` datetime NOT NULL,
-  `score` bigint NOT NULL,
-  `nbquestions` int NOT NULL
+  `score` int NOT NULL,
+  `nbquestions` int NOT NULL,
+  `idcategorie` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 -- --------------------------------------------------------
@@ -443,18 +434,6 @@ CREATE TABLE `vehicule` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
--- Déchargement des données de la table `vehicule`
---
-
-INSERT INTO `vehicule` (`idvehicule`, `nbpassagers`, `immatriculation`, `designation`, `manuel`) VALUES
-(1, 5, 'FA-828-NE', 'Tesla', 1),
-(2, 2, 'BZ-666-FF', 'Porshe 911', 1);
-
---
--- Index pour les tables déchargées
---
-
---
 -- Index pour la table `categorie_question`
 --
 ALTER TABLE `categorie_question`
@@ -476,7 +455,7 @@ ALTER TABLE `compte_api`
 -- Index pour la table `conduire`
 --
 ALTER TABLE `conduire`
-  ADD PRIMARY KEY (`ideleve`,`idvehicule`,`idmoniteur`,`heuredebut`) USING BTREE,
+  ADD PRIMARY KEY (`idlecon`),
   ADD KEY `i_fk_conduire_eleve1` (`ideleve`),
   ADD KEY `i_fk_conduire_vehicule1` (`idvehicule`),
   ADD KEY `i_fk_conduire_moniteur1` (`idmoniteur`);
@@ -486,6 +465,13 @@ ALTER TABLE `conduire`
 --
 ALTER TABLE `demande_acces_api`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `demande_heure_conduite`
+--
+ALTER TABLE `demande_heure_conduite`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ideleve` (`ideleve`);
 
 --
 -- Index pour la table `demande_reinitialisation`
@@ -548,7 +534,8 @@ ALTER TABLE `reponse`
 --
 ALTER TABLE `resultat`
   ADD PRIMARY KEY (`idresultat`),
-  ADD KEY `i_fk_resultat_eleve1` (`ideleve`);
+  ADD KEY `i_fk_resultat_eleve1` (`ideleve`),
+  ADD KEY `idcategorie` (`idcategorie`);
 
 --
 -- Index pour la table `token`
@@ -578,7 +565,7 @@ ALTER TABLE `categorie_question`
 -- AUTO_INCREMENT pour la table `compte_admin`
 --
 ALTER TABLE `compte_admin`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `compte_api`
@@ -587,16 +574,28 @@ ALTER TABLE `compte_api`
   MODIFY `idcompteapi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT pour la table `conduire`
+--
+ALTER TABLE `conduire`
+  MODIFY `idlecon` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT pour la table `demande_acces_api`
 --
 ALTER TABLE `demande_acces_api`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT pour la table `demande_heure_conduite`
+--
+ALTER TABLE `demande_heure_conduite`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT pour la table `eleve`
 --
 ALTER TABLE `eleve`
-  MODIFY `ideleve` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `ideleve` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT pour la table `forfait`
@@ -620,7 +619,7 @@ ALTER TABLE `question`
 -- AUTO_INCREMENT pour la table `resultat`
 --
 ALTER TABLE `resultat`
-  MODIFY `idresultat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `idresultat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT pour la table `vehicule`
@@ -639,6 +638,12 @@ ALTER TABLE `conduire`
   ADD CONSTRAINT `conduire_ibfk_1` FOREIGN KEY (`ideleve`) REFERENCES `eleve` (`ideleve`) ON DELETE RESTRICT ON UPDATE CASCADE,
   ADD CONSTRAINT `conduire_ibfk_2` FOREIGN KEY (`idvehicule`) REFERENCES `vehicule` (`idvehicule`) ON DELETE RESTRICT ON UPDATE CASCADE,
   ADD CONSTRAINT `conduire_ibfk_3` FOREIGN KEY (`idmoniteur`) REFERENCES `moniteur` (`idmoniteur`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `demande_heure_conduite`
+--
+ALTER TABLE `demande_heure_conduite`
+  ADD CONSTRAINT `demande_heure_conduite_ibfk_1` FOREIGN KEY (`ideleve`) REFERENCES `eleve` (`ideleve`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Contraintes pour la table `demande_reinitialisation`
@@ -675,7 +680,8 @@ ALTER TABLE `reponse`
 -- Contraintes pour la table `resultat`
 --
 ALTER TABLE `resultat`
-  ADD CONSTRAINT `resultat_ibfk_1` FOREIGN KEY (`ideleve`) REFERENCES `eleve` (`ideleve`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `resultat_ibfk_1` FOREIGN KEY (`ideleve`) REFERENCES `eleve` (`ideleve`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `resultat_ibfk_2` FOREIGN KEY (`idcategorie`) REFERENCES `categorie_question` (`idcategorie`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Contraintes pour la table `token`
@@ -687,10 +693,8 @@ DELIMITER $$
 --
 -- Évènements
 --
-DROP EVENT IF EXISTS `delete_old_tokens`$$
 CREATE DEFINER=`ap3_les-supers-nanas-1`@`%` EVENT `delete_old_tokens` ON SCHEDULE EVERY 30 SECOND STARTS '2025-09-14 14:51:18' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM demande_reinitialisation WHERE date_creation < NOW() - INTERVAL 15 MINUTE$$
 
-DROP EVENT IF EXISTS `delete_old_tokens_api`$$
 CREATE DEFINER=`ap3_les-supers-nanas-1`@`%` EVENT `delete_old_tokens_api` ON SCHEDULE EVERY 30 SECOND STARTS '2025-10-17 12:19:52' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM demande_reinitialisation_api
   WHERE date_creation < NOW() - INTERVAL 15 MINUTE$$
 
