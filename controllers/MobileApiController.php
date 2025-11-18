@@ -74,7 +74,7 @@ class MobileApiController extends ApiController
 		$datenaissance = $data['datenaissance'] ?? null;
 		$motDePasse = $data['motdepasse'] ?? null;
 
-		if (empty($nom) || empty($prenom) || empty($telephone) || empty($email) || empty($datenaissance) || empty($motDePasse)) {
+		if (empty($nom) || empty($prenom)  || empty($email) || empty($datenaissance) || empty($motDePasse)) {
 			return $this->errorResponse('Tous les champs sont requis', 400);
 		}
 
