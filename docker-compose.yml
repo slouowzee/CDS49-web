@@ -5,10 +5,10 @@ services:
     build: .
     container_name: front
     environment:
-      - MVC_SERVER=phpmyadmin.dombtsig.local
+      - MVC_SERVER=192.168.123.40
       - MVC_DB=ap3_les-supers-nanas
-      - MVC_USER=ap3_les-supers-nanas-1
-      - MVC_TOKEN=3VTeHYeL
+      - MVC_USER=admin_ap3
+      - MVC_TOKEN=KA9gj0mRWXZR0fs6
       - MVC_DEBUG=true
       - URL_BASE=http://localhost:9000/
       - MVC_MAIL_SERVER=mail.dombtsig.local
