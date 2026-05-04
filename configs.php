@@ -1,9 +1,9 @@
 <?php
 
-$DB_SERVER = getenv("MVC_SERVER") ?: "phpmyadmin.dombtsig.local";
+$DB_SERVER = getenv("MVC_SERVER") ?: "192.168.123.40";
 $DB_DATABASE = getenv("MVC_DB") ?: "ap3_les-supers-nanas";
-$DB_USER = getenv("MVC_USER") ?: "ap3_les-supers-nanas-1";
-$DB_PASSWORD = getenv("MVC_TOKEN") ?: "3VTeHYeL";
+$DB_USER = getenv("MVC_USER") ?: "admin_ap3";
+$DB_PASSWORD = getenv("MVC_TOKEN") ?: "KA9gj0mRWXZR0fs6";
 $DEBUG = getenv("MVC_DEBUG") ?: true;
 $URL_BASE = getenv("URL_BASE") ?: "http://localhost:9000/";
 $MAIL_SERVER = getenv("MVC_MAIL_SERVER") ?: "mail.dombtsig.local";
